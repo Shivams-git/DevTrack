@@ -154,13 +154,6 @@ export function LoginPage() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                 <div className="text-xs">
-                  <strong className="block text-[var(--theme-text)]">7 Premium Themes</strong>
-                  <span className="text-[var(--theme-text-muted)]">Midnight Slate, Obsidian Cyber, Nordic Aurora & more.</span>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                <div className="text-xs">
                   <strong className="block text-[var(--theme-text)]">Dynamic Urgency Engine</strong>
                   <span className="text-[var(--theme-text-muted)]">Smart prioritization based on due dates & blockages.</span>
                 </div>
