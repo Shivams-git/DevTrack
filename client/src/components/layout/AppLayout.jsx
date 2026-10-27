@@ -64,10 +64,10 @@ export function AppLayout() {
       </div>
 
       {/* Overlays & Global Modals */}
-      <ToastContainer />
-      <ConfirmDialog />
       <IssueFormModal />
       <IssueDetailModal />
+      <ConfirmDialog />
+      <ToastContainer />
     </div>
   );
 }

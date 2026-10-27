@@ -43,6 +43,48 @@ const PRIORITY_COLORS = {
   Critical: '#ef4444',
 };
 
+function StatusPieTooltip({ active, payload }) {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    const color = STATUS_COLORS[data.name] || '#6366f1';
+    return (
+      <div className="bg-slate-900/95 border border-slate-700/80 px-3.5 py-2.5 rounded-xl shadow-2xl backdrop-blur-md">
+        <div className="text-[11px] font-semibold text-slate-400 mb-1">Status Section</div>
+        <div className="flex items-center gap-2">
+          <span
+            className="w-2.5 h-2.5 rounded-full inline-block shadow-sm"
+            style={{ backgroundColor: color }}
+          />
+          <span className="text-xs font-semibold text-slate-100">{data.name}:</span>
+          <span className="text-xs font-mono font-bold text-white">{data.value}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+function PriorityBarTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    const color = PRIORITY_COLORS[label] || '#4f46e5';
+    return (
+      <div className="bg-slate-900/95 border border-slate-700/80 px-3.5 py-2.5 rounded-xl shadow-2xl backdrop-blur-md">
+        <div className="text-[11px] font-semibold text-slate-400 mb-1">{label} Priority</div>
+        <div className="flex items-center gap-2">
+          <span
+            className="w-2.5 h-2.5 rounded-full inline-block shadow-sm"
+            style={{ backgroundColor: color }}
+          />
+          <span className="text-xs font-medium text-slate-200">Issues:</span>
+          <span className="text-xs font-mono font-bold text-white">{data.value}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
 export function DashboardPage() {
   const { openCreateModal, openDetailModal, issues, loading, triggerRefresh } = useIssues();
   const [dashboardData, setDashboardData] = useState(null);
@@ -202,12 +244,21 @@ export function DashboardPage() {
                     ))}
                   </Pie>
                   <Tooltip
+                    content={<StatusPieTooltip />}
                     contentStyle={{
                       backgroundColor: '#0f172a',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#fff',
+                      border: '1px solid #334155',
+                      borderRadius: '10px',
+                      color: '#f8fafc',
                       fontSize: '12px',
+                    }}
+                    itemStyle={{
+                      color: '#f8fafc',
+                      fontSize: '12px',
+                    }}
+                    labelStyle={{
+                      color: '#f1f5f9',
+                      fontWeight: 600,
                     }}
                   />
                 </PieChart>
@@ -219,8 +270,8 @@ export function DashboardPage() {
                       className="w-2.5 h-2.5 rounded-full"
                       style={{ backgroundColor: STATUS_COLORS[entry.name] || '#6366f1' }}
                     />
-                    <span className="text-slate-600">{entry.name}:</span>
-                    <span className="font-mono font-bold text-slate-900">{entry.value}</span>
+                    <span className="text-[var(--theme-text-muted)]">{entry.name}:</span>
+                    <span className="font-mono font-bold text-[var(--theme-text)]">{entry.value}</span>
                   </div>
                 ))}
               </div>
@@ -246,12 +297,21 @@ export function DashboardPage() {
                   <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip
                     cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+                    content={<PriorityBarTooltip />}
                     contentStyle={{
                       backgroundColor: '#0f172a',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#fff',
+                      border: '1px solid #334155',
+                      borderRadius: '10px',
+                      color: '#f8fafc',
                       fontSize: '12px',
+                    }}
+                    itemStyle={{
+                      color: '#f8fafc',
+                      fontSize: '12px',
+                    }}
+                    labelStyle={{
+                      color: '#f1f5f9',
+                      fontWeight: 600,
                     }}
                   />
                   <Bar dataKey="count" radius={[6, 6, 0, 0]} fill="#4f46e5">

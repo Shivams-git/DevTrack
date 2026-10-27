@@ -29,6 +29,54 @@ const STATUS_COLORS = ['#94a3b8', '#3b82f6', '#f59e0b', '#a855f7', '#10b981'];
 const PRIORITY_COLORS = ['#94a3b8', '#38bdf8', '#f59e0b', '#ef4444'];
 const TYPE_COLORS = ['#3b82f6', '#ef4444', '#6366f1', '#14b8a6'];
 
+function PipelineTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="bg-slate-900/95 border border-slate-700/80 px-3.5 py-2.5 rounded-xl shadow-2xl backdrop-blur-md">
+        <div className="text-[11px] font-semibold text-slate-400 mb-1">{label}</div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-slate-200">Issues:</span>
+          <span className="text-xs font-mono font-bold text-white">{data.value}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+function PriorityPieTooltip({ active, payload }) {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="bg-slate-900/95 border border-slate-700/80 px-3.5 py-2.5 rounded-xl shadow-2xl backdrop-blur-md">
+        <div className="text-[11px] font-semibold text-slate-400 mb-1">Priority Section</div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-slate-100">{data.name}:</span>
+          <span className="text-xs font-mono font-bold text-white">{data.value} issues</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+function IssueTypeTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="bg-slate-900/95 border border-slate-700/80 px-3.5 py-2.5 rounded-xl shadow-2xl backdrop-blur-md">
+        <div className="text-[11px] font-semibold text-slate-400 mb-1">{label}</div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-slate-200">Total:</span>
+          <span className="text-xs font-mono font-bold text-white">{data.value}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
 export function InsightsPage() {
   const { issues } = useIssues();
   const [insights, setInsights] = useState(null);
@@ -163,11 +211,21 @@ export function InsightsPage() {
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#888' }} interval={0} angle={-15} textAnchor="end" />
                   <YAxis tick={{ fontSize: 11, fill: '#888' }} allowDecimals={false} />
                   <Tooltip
+                    content={<PipelineTooltip />}
                     contentStyle={{
                       backgroundColor: '#0f172a',
-                      borderRadius: '8px',
-                      color: '#fff',
+                      border: '1px solid #334155',
+                      borderRadius: '10px',
+                      color: '#f8fafc',
                       fontSize: '12px',
+                    }}
+                    itemStyle={{
+                      color: '#f8fafc',
+                      fontSize: '12px',
+                    }}
+                    labelStyle={{
+                      color: '#f1f5f9',
+                      fontWeight: 600,
                     }}
                   />
                   <Bar dataKey="count" radius={[6, 6, 0, 0]}>
@@ -219,11 +277,21 @@ export function InsightsPage() {
                     ))}
                   </Pie>
                   <Tooltip
+                    content={<PriorityPieTooltip />}
                     contentStyle={{
                       backgroundColor: '#0f172a',
-                      borderRadius: '8px',
-                      color: '#fff',
+                      border: '1px solid #334155',
+                      borderRadius: '10px',
+                      color: '#f8fafc',
                       fontSize: '12px',
+                    }}
+                    itemStyle={{
+                      color: '#f8fafc',
+                      fontSize: '12px',
+                    }}
+                    labelStyle={{
+                      color: '#f1f5f9',
+                      fontWeight: 600,
                     }}
                   />
                 </PieChart>
@@ -259,11 +327,21 @@ export function InsightsPage() {
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip
+                  content={<IssueTypeTooltip />}
                   contentStyle={{
                     backgroundColor: '#0f172a',
-                    borderRadius: '8px',
-                    color: '#fff',
+                    border: '1px solid #334155',
+                    borderRadius: '10px',
+                    color: '#f8fafc',
                     fontSize: '12px',
+                  }}
+                  itemStyle={{
+                    color: '#f8fafc',
+                    fontSize: '12px',
+                  }}
+                  labelStyle={{
+                    color: '#f1f5f9',
+                    fontWeight: 600,
                   }}
                 />
                 <Bar dataKey="count" radius={[6, 6, 0, 0]}>
