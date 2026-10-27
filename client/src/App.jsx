@@ -12,6 +12,7 @@ import { InsightsPage } from './pages/InsightsPage.jsx';
 import { ActivityPage } from './pages/ActivityPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 import { Layers } from 'lucide-react';
+import { DbLoadingIndicator } from './components/common/DbLoadingIndicator.jsx';
 
 function ProtectedRoute() {
   const { isAuthenticated, isGuest, loading } = useAuth();
@@ -56,6 +57,7 @@ export default function App() {
                 </Route>
               </Route>
             </Routes>
+            <DbLoadingIndicator />
           </IssueProvider>
         </BrowserRouter>
       </AuthProvider>

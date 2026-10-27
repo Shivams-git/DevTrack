@@ -1,5 +1,24 @@
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
 
+let activeRequestsCount = 0;
+const loadingListeners = new Set();
+
+export function subscribeDbLoading(callback) {
+  loadingListeners.add(callback);
+  callback(activeRequestsCount > 0);
+  return () => loadingListeners.delete(callback);
+}
+
+function updateLoading(delta) {
+  activeRequestsCount = Math.max(0, activeRequestsCount + delta);
+  const isLoading = activeRequestsCount > 0;
+  loadingListeners.forEach((cb) => {
+    try {
+      cb(isLoading);
+    } catch {}
+  });
+}
+
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
   const token = localStorage.getItem('devtrack_token');
@@ -12,6 +31,7 @@ async function request(endpoint, options = {}) {
     ...(options.headers || {}),
   };
 
+  updateLoading(1);
   try {
     const res = await fetch(url, {
       ...options,
@@ -34,6 +54,8 @@ async function request(endpoint, options = {}) {
       throw new Error(`Unable to reach DevTrack API at ${API_BASE_URL}. Ensure the backend server is running.`);
     }
     throw error;
+  } finally {
+    updateLoading(-1);
   }
 }
 

@@ -77,10 +77,20 @@ function IssueTypeTooltip({ active, payload, label }) {
   return null;
 }
 
+import { getDemoIssues } from '../data/demoIssues.js';
+
 export function InsightsPage() {
   const { issues, testMode } = useIssues();
   const [insights, setInsights] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const effectiveIssues = testMode
+    ? (issues && issues.length > 0 ? issues : getDemoIssues())
+    : issues;
+
+  useEffect(() => {
+    setInsights(null);
+  }, [testMode]);
 
   useEffect(() => {
     let mounted = true;
@@ -101,32 +111,39 @@ export function InsightsPage() {
     };
   }, [issues, testMode]);
 
-  const total = insights?.total || issues.length;
-  const completed = insights?.completed || issues.filter((i) => i.status === 'Done').length;
-  const overdue = insights?.overdue || issues.filter((i) => i.isOverdue).length;
-  const inProgress =
-    insights?.inProgress || issues.filter((i) => i.status === 'In Progress').length;
+  const useServerData = !testMode && Boolean(insights?.total);
+
+  const total = useServerData ? insights.total : effectiveIssues.length;
+  const completed = useServerData
+    ? insights.completed
+    : effectiveIssues.filter((i) => i.status === 'Done').length;
+  const overdue = useServerData
+    ? insights.overdue
+    : effectiveIssues.filter((i) => i.isOverdue).length;
+  const inProgress = useServerData
+    ? insights.inProgress
+    : effectiveIssues.filter((i) => i.status === 'In Progress').length;
   const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  const statusData = insights?.byStatus
+  const statusData = (useServerData && insights?.byStatus)
     ? Object.entries(insights.byStatus).map(([name, count]) => ({ name, count }))
     : ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done'].map((name) => ({
         name,
-        count: issues.filter((i) => i.status === name).length,
+        count: effectiveIssues.filter((i) => i.status === name).length,
       }));
 
-  const priorityData = insights?.byPriority
+  const priorityData = (useServerData && insights?.byPriority)
     ? Object.entries(insights.byPriority).map(([name, count]) => ({ name, count }))
     : ['Low', 'Medium', 'High', 'Critical'].map((name) => ({
         name,
-        count: issues.filter((i) => i.priority === name).length,
+        count: effectiveIssues.filter((i) => i.priority === name).length,
       }));
 
-  const typeData = insights?.byType
+  const typeData = (useServerData && insights?.byType)
     ? Object.entries(insights.byType).map(([name, count]) => ({ name, count }))
     : ['Task', 'Bug', 'Feature', 'Improvement'].map((name) => ({
         name,
-        count: issues.filter((i) => i.type === name).length,
+        count: effectiveIssues.filter((i) => i.type === name).length,
       }));
 
   return (

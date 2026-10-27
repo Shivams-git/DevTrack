@@ -31,6 +31,8 @@ const SORT_OPTIONS = [
   { label: 'Created Date', value: 'createdAt' },
 ];
 
+import { getDemoIssues } from '../data/demoIssues.js';
+
 export function IssuesPage() {
   const {
     issues,
@@ -54,8 +56,12 @@ export function IssuesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
+  const effectiveIssues = testMode
+    ? (issues && issues.length > 0 ? issues : getDemoIssues())
+    : issues;
+
   // Filter & Search using fuzzy matchesSearch helper
-  const filtered = issues.filter((issue) => {
+  const filtered = effectiveIssues.filter((issue) => {
     if (searchQuery && !matchesSearch(issue, searchQuery)) {
       return false;
     }

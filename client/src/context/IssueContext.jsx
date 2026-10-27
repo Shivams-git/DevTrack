@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { api } from '../services/api.js';
+import { api, subscribeDbLoading } from '../services/api.js';
 import { useAuth } from './AuthContext.jsx';
 import { getDemoIssues } from '../data/demoIssues.js';
 
@@ -13,17 +13,23 @@ export function IssueProvider({ children }) {
     return localStorage.getItem('devtrack_test_mode') === 'true';
   });
 
-  // Seed issues immediately if testMode is active
+  // Seed issues immediately if testMode is active (zero wait for database)
   const [issues, setIssues] = useState(() => {
     const isTest = localStorage.getItem('devtrack_test_mode') === 'true';
     return isTest ? getDemoIssues() : [];
   });
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [isDbLoading, setIsDbLoading] = useState(false);
   const [error, setError] = useState(null);
   const [health, setHealth] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshIndex, setRefreshIndex] = useState(0);
+
+  // Subscribe to in-flight database requests from api service
+  useEffect(() => {
+    return subscribeDbLoading(setIsDbLoading);
+  }, []);
 
   // Modals & Dialogs
   const [activeModal, setActiveModal] = useState({ type: null, issue: null });
@@ -63,6 +69,10 @@ export function IssueProvider({ children }) {
   // Fetch issues
   const refreshIssues = useCallback(async () => {
     const isTest = localStorage.getItem('devtrack_test_mode') === 'true';
+    if (isTest) {
+      // Instantly seed issues so test mode NEVER waits for database
+      setIssues((prev) => (prev && prev.length > 0 ? prev : getDemoIssues()));
+    }
     try {
       setLoading(true);
       setError(null);
@@ -77,8 +87,7 @@ export function IssueProvider({ children }) {
     } catch (err) {
       if (isTest) {
         // If server is cold-starting on Render or unreachable, ensure demo issues are never empty
-        setIssues((prev) => (prev.length > 0 ? prev : getDemoIssues()));
-        addToast('Server is connecting. Displaying instant demo dataset.', 'info');
+        setIssues((prev) => (prev && prev.length > 0 ? prev : getDemoIssues()));
       } else {
         setError(err.message);
         addToast(err.message, 'error');
@@ -94,10 +103,10 @@ export function IssueProvider({ children }) {
       localStorage.setItem('devtrack_test_mode', String(next));
       if (next) {
         setIssues(getDemoIssues());
-        addToast('Test Mode enabled: populated sample demo issues.', 'info');
+        addToast('Test Mode active: loaded instant seed dataset.', 'info');
       } else {
         setIssues([]);
-        addToast('Test Mode disabled: displaying your personal workspace.', 'info');
+        addToast('Test Mode disabled: personal workspace.', 'info');
       }
       return next;
     });
@@ -245,6 +254,7 @@ export function IssueProvider({ children }) {
       value={{
         issues,
         loading,
+        isDbLoading: isDbLoading || loading,
         error,
         health,
         searchQuery,

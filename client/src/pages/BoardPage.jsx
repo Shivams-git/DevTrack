@@ -9,6 +9,8 @@ const COLUMNS = ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done'];
 const PRIORITIES = ['All', 'Low', 'Medium', 'High', 'Critical'];
 const TYPES = ['All', 'Task', 'Bug', 'Feature', 'Improvement'];
 
+import { getDemoIssues } from '../data/demoIssues.js';
+
 export function BoardPage() {
   const {
     issues,
@@ -25,8 +27,12 @@ export function BoardPage() {
   const [selectedType, setSelectedType] = useState('All');
   const [draggedIssue, setDraggedIssue] = useState(null);
 
+  const effectiveIssues = testMode
+    ? (issues && issues.length > 0 ? issues : getDemoIssues())
+    : issues;
+
   // Filter issues
-  const filteredIssues = issues.filter((issue) => {
+  const filteredIssues = effectiveIssues.filter((issue) => {
     // Search query with flexible matching
     if (searchQuery && !matchesSearch(issue, searchQuery)) {
       return false;

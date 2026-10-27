@@ -86,6 +86,8 @@ function PriorityBarTooltip({ active, payload, label }) {
   return null;
 }
 
+import { getDemoIssues } from '../data/demoIssues.js';
+
 export function DashboardPage() {
   const {
     openCreateModal,
@@ -97,7 +99,16 @@ export function DashboardPage() {
     toggleTestMode,
   } = useIssues();
   const [dashboardData, setDashboardData] = useState(null);
-  const [loadingStats, setLoadingStats] = useState(true);
+  const [loadingStats, setLoadingStats] = useState(false);
+
+  const effectiveIssues = testMode
+    ? (issues && issues.length > 0 ? issues : getDemoIssues())
+    : issues;
+
+  useEffect(() => {
+    // Reset dashboard data when toggling test mode to avoid showing stale 0s
+    setDashboardData(null);
+  }, [testMode]);
 
   useEffect(() => {
     let isMounted = true;
@@ -118,55 +129,60 @@ export function DashboardPage() {
     };
   }, [issues, testMode]);
 
-  const metrics = dashboardData?.metrics || {
-    total: issues.length,
-    completed: issues.filter((i) => i.status === 'Done').length,
-    inProgress: issues.filter((i) => i.status === 'In Progress').length,
-    overdue: issues.filter((i) => i.isOverdue).length,
-    blocked: issues.filter((i) => i.isBlocked && i.status !== 'Done').length,
-    completionPercentage:
-      issues.length > 0
-        ? Math.round((issues.filter((i) => i.status === 'Done').length / issues.length) * 100)
-        : 0,
-  };
+  // In test mode, compute immediately from seed data so user never waits for database
+  const useServerData = !testMode && Boolean(dashboardData?.metrics);
 
-  // Prepare chart data (fallback to computing from issues when offline or loading)
-  const statusChartData = dashboardData?.statusCounts
+  const metrics = useServerData
+    ? dashboardData.metrics
+    : {
+        total: effectiveIssues.length,
+        completed: effectiveIssues.filter((i) => i.status === 'Done').length,
+        inProgress: effectiveIssues.filter((i) => i.status === 'In Progress').length,
+        overdue: effectiveIssues.filter((i) => i.isOverdue).length,
+        blocked: effectiveIssues.filter((i) => i.isBlocked && i.status !== 'Done').length,
+        completionPercentage:
+          effectiveIssues.length > 0
+            ? Math.round(
+                (effectiveIssues.filter((i) => i.status === 'Done').length / effectiveIssues.length) * 100
+              )
+            : 0,
+      };
+
+  // Prepare chart data (computed instantly from effectiveIssues)
+  const statusChartData = (useServerData && dashboardData?.statusCounts)
     ? Object.entries(dashboardData.statusCounts)
         .filter(([_, count]) => count > 0)
         .map(([name, value]) => ({ name, value }))
     : ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done']
         .map((name) => ({
           name,
-          value: issues.filter((i) => i.status === name).length,
+          value: effectiveIssues.filter((i) => i.status === name).length,
         }))
         .filter((d) => d.value > 0);
 
-  const priorityChartData = dashboardData?.priorityCounts
+  const priorityChartData = (useServerData && dashboardData?.priorityCounts)
     ? Object.entries(dashboardData.priorityCounts).map(([name, count]) => ({
         name,
         count,
       }))
     : ['Low', 'Medium', 'High', 'Critical'].map((name) => ({
         name,
-        count: issues.filter((i) => i.priority === name).length,
+        count: effectiveIssues.filter((i) => i.priority === name).length,
       }));
 
-  const urgentTasks =
-    dashboardData?.urgentTasks?.length > 0
-      ? dashboardData.urgentTasks
-      : issues
-          .filter((i) => i.status !== 'Done' && (i.urgencyScore >= 30 || i.isBlocked || i.isOverdue))
-          .sort((a, b) => (b.urgencyScore || 0) - (a.urgencyScore || 0))
-          .slice(0, 5);
+  const urgentTasks = (useServerData && dashboardData?.urgentTasks?.length > 0)
+    ? dashboardData.urgentTasks
+    : effectiveIssues
+        .filter((i) => i.status !== 'Done' && (i.urgencyScore >= 30 || i.isBlocked || i.isOverdue))
+        .sort((a, b) => (b.urgencyScore || 0) - (a.urgencyScore || 0))
+        .slice(0, 5);
 
-  const upcomingDeadlines =
-    dashboardData?.upcomingDeadlines?.length > 0
-      ? dashboardData.upcomingDeadlines
-      : issues
-          .filter((i) => i.status !== 'Done' && i.dueDate && !i.isOverdue)
-          .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-          .slice(0, 5);
+  const upcomingDeadlines = (useServerData && dashboardData?.upcomingDeadlines?.length > 0)
+    ? dashboardData.upcomingDeadlines
+    : effectiveIssues
+        .filter((i) => i.status !== 'Done' && i.dueDate && !i.isOverdue)
+        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+        .slice(0, 5);
 
   return (
     <div className="space-y-6">
