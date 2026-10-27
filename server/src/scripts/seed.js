@@ -1,0 +1,71 @@
+import { connectDB, isDbConnected } from '../config/db.js';
+import { Issue } from '../models/Issue.js';
+import { Activity } from '../models/Activity.js';
+import { sampleIssues } from './seedData.js';
+import { memoryStore } from '../services/memoryStore.js';
+import { logActivity } from '../services/activityService.js';
+import { ACTIVITY_ACTIONS } from '../utils/constants.js';
+import { logger } from '../utils/logger.js';
+
+export async function runSeed({ quiet = false } = {}) {
+  if (!quiet) logger.info('Seeding DevTrack database with realistic developer issues...');
+
+  const dbOk = await connectDB();
+
+  if (dbOk && isDbConnected()) {
+    // MongoDB mode
+    await Issue.deleteMany({});
+    await Activity.deleteMany({});
+
+    for (const item of sampleIssues) {
+      await Issue.create(item);
+    }
+
+    // Seed realistic activity records
+    const recentSample = sampleIssues.slice(0, 5);
+    for (const item of recentSample) {
+      await Activity.create({
+        action: ACTIVITY_ACTIONS.ISSUE_CREATED,
+        description: `Created issue ${item.key}: "${item.title}" [${item.priority}]`,
+        issueKey: item.key,
+        metadata: { status: item.status, priority: item.priority },
+        createdAt: item.createdAt,
+      });
+    }
+
+    if (!quiet) logger.info(`Successfully seeded ${sampleIssues.length} issues and activity history in MongoDB!`);
+    return { success: true, count: sampleIssues.length, mode: 'mongodb' };
+  } else {
+    // In-memory demo store mode
+    memoryStore.reset();
+    for (const item of sampleIssues) {
+      memoryStore.createIssue(item);
+    }
+
+    const recentSample = sampleIssues.slice(0, 5);
+    for (const item of recentSample) {
+      memoryStore.recordActivity({
+        action: ACTIVITY_ACTIONS.ISSUE_CREATED,
+        description: `Created issue ${item.key}: "${item.title}" [${item.priority}]`,
+        issueKey: item.key,
+        metadata: { status: item.status, priority: item.priority },
+      });
+    }
+
+    if (!quiet) logger.info(`Seeded ${sampleIssues.length} issues in DevTrack in-memory demo store!`);
+    return { success: true, count: sampleIssues.length, mode: 'in_memory' };
+  }
+}
+
+// If executed directly from command line
+if (process.argv[1]?.endsWith('seed.js')) {
+  runSeed()
+    .then(() => {
+      logger.info('Seed script finished.');
+      process.exit(0);
+    })
+    .catch((err) => {
+      logger.error('Seed script error:', err);
+      process.exit(1);
+    });
+}
