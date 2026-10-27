@@ -16,6 +16,28 @@ async function parseResponse(res) {
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  // Load saved multi-account sessions
+  const [sessions, setSessions] = useState(() => {
+    try {
+      const savedSessions = localStorage.getItem('devtrack_sessions');
+      if (savedSessions) {
+        return JSON.parse(savedSessions);
+      }
+      // Migrate legacy single session if present
+      const legacyUser = localStorage.getItem('devtrack_user');
+      const legacyToken = localStorage.getItem('devtrack_token');
+      if (legacyUser && legacyToken) {
+        const initial = [{ user: JSON.parse(legacyUser), token: legacyToken }];
+        localStorage.setItem('devtrack_sessions', JSON.stringify(initial));
+        return initial;
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Current active user & token
   const [user, setUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('devtrack_user');
@@ -29,7 +51,24 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Validate existing token on mount
+  // Synchronize helper
+  const syncSessionStorage = (newSessions, activeUser, activeToken) => {
+    setSessions(newSessions);
+    localStorage.setItem('devtrack_sessions', JSON.stringify(newSessions));
+    if (activeUser && activeToken) {
+      setUser(activeUser);
+      setToken(activeToken);
+      localStorage.setItem('devtrack_user', JSON.stringify(activeUser));
+      localStorage.setItem('devtrack_token', activeToken);
+    } else {
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('devtrack_user');
+      localStorage.removeItem('devtrack_token');
+    }
+  };
+
+  // Validate active token on mount
   useEffect(() => {
     const fetchMe = async () => {
       if (!token) {
@@ -47,14 +86,23 @@ export function AuthProvider({ children }) {
         const { ok, data: json } = await parseResponse(res);
 
         if (ok && json.data) {
-          setUser(json.data);
-          localStorage.setItem('devtrack_user', JSON.stringify(json.data));
-        } else {
-          // Token expired or invalid
-          logout();
+          const updatedUser = json.data;
+          setUser(updatedUser);
+          localStorage.setItem('devtrack_user', JSON.stringify(updatedUser));
+
+          // Update active user in sessions list
+          setSessions((prev) => {
+            const next = prev.map((s) =>
+              (s.user._id && s.user._id === updatedUser._id) || s.user.email === updatedUser.email
+                ? { ...s, user: updatedUser }
+                : s
+            );
+            localStorage.setItem('devtrack_sessions', JSON.stringify(next));
+            return next;
+          });
         }
       } catch (err) {
-        // Fallback or network error: keep local session
+        // Network error: preserve local session
       } finally {
         setLoading(false);
       }
@@ -62,6 +110,22 @@ export function AuthProvider({ children }) {
 
     fetchMe();
   }, [token]);
+
+  const isSameUser = (u1, target) => {
+    if (!u1 || !target) return false;
+    const targetId = typeof target === 'string' ? target : (target._id || target.id);
+    const targetEmail = typeof target === 'string' ? target : target.email;
+    const u1Id = u1._id || u1.id;
+    const u1Email = u1.email;
+
+    if (targetId && u1Id && String(u1Id) === String(targetId)) return true;
+    if (targetEmail && u1Email && u1Email.toLowerCase() === targetEmail.toLowerCase()) return true;
+    if (typeof target === 'string') {
+      if (u1Id && String(u1Id) === target) return true;
+      if (u1Email && u1Email.toLowerCase() === target.toLowerCase()) return true;
+    }
+    return false;
+  };
 
   const login = async (email, password) => {
     setError(null);
@@ -78,10 +142,15 @@ export function AuthProvider({ children }) {
       }
 
       const { user: userData, token: userToken } = json.data;
-      setUser(userData);
-      setToken(userToken);
-      localStorage.setItem('devtrack_token', userToken);
-      localStorage.setItem('devtrack_user', JSON.stringify(userData));
+
+      // Add to sessions or update existing
+      setSessions((prev) => {
+        const filtered = prev.filter((s) => !isSameUser(s.user, userData));
+        const nextSessions = [...filtered, { user: userData, token: userToken }];
+        syncSessionStorage(nextSessions, userData, userToken);
+        return nextSessions;
+      });
+
       return { success: true, user: userData };
     } catch (err) {
       setError(err.message);
@@ -104,10 +173,14 @@ export function AuthProvider({ children }) {
       }
 
       const { user: userData, token: userToken } = json.data;
-      setUser(userData);
-      setToken(userToken);
-      localStorage.setItem('devtrack_token', userToken);
-      localStorage.setItem('devtrack_user', JSON.stringify(userData));
+
+      setSessions((prev) => {
+        const filtered = prev.filter((s) => !isSameUser(s.user, userData));
+        const nextSessions = [...filtered, { user: userData, token: userToken }];
+        syncSessionStorage(nextSessions, userData, userToken);
+        return nextSessions;
+      });
+
       return { success: true, user: userData };
     } catch (err) {
       setError(err.message);
@@ -115,11 +188,43 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('devtrack_token');
-    localStorage.removeItem('devtrack_user');
+  const switchAccount = (userIdOrEmail) => {
+    const targetSession = sessions.find((s) => isSameUser(s.user, userIdOrEmail));
+
+    if (targetSession) {
+      setUser(targetSession.user);
+      setToken(targetSession.token);
+      localStorage.setItem('devtrack_user', JSON.stringify(targetSession.user));
+      localStorage.setItem('devtrack_token', targetSession.token);
+      return { success: true, user: targetSession.user };
+    }
+    return { success: false, error: 'Session not found' };
+  };
+
+  const logout = (userIdOrEmail) => {
+    const targetId = userIdOrEmail || (user ? (user._id || user.email) : null);
+    if (!targetId) return;
+
+    const remaining = sessions.filter((s) => !isSameUser(s.user, targetId));
+
+    // If logging out active profile, switch to next available profile or clear
+    const isActiveBeingRemoved = user && isSameUser(user, targetId);
+
+    if (isActiveBeingRemoved) {
+      if (remaining.length > 0) {
+        const next = remaining[0];
+        syncSessionStorage(remaining, next.user, next.token);
+      } else {
+        syncSessionStorage([], null, null);
+      }
+    } else {
+      setSessions(remaining);
+      localStorage.setItem('devtrack_sessions', JSON.stringify(remaining));
+    }
+  };
+
+  const logoutAll = () => {
+    syncSessionStorage([], null, null);
   };
 
   const demoLogin = async (demoEmail = 'alex@devtrack.dev') => {
@@ -131,12 +236,16 @@ export function AuthProvider({ children }) {
       value={{
         user,
         token,
+        sessions,
+        otherProfiles: sessions.filter((s) => user && !isSameUser(s.user, user)),
         isAuthenticated: Boolean(user && token),
         loading,
         error,
         login,
         register,
+        switchAccount,
         logout,
+        logoutAll,
         demoLogin,
       }}
     >

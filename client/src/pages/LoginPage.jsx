@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { ThemeSelector } from '../components/common/ThemeSelector.jsx';
@@ -15,6 +15,10 @@ import {
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
+  UserPlus,
+  Check,
+  X,
+  ArrowLeft,
 } from 'lucide-react';
 
 const ROLES = [
@@ -26,6 +30,29 @@ const ROLES = [
 ];
 
 export function LoginPage() {
+  const {
+    user,
+    sessions,
+    switchAccount,
+    logout,
+    logoutAll,
+    login,
+    register,
+    demoLogin,
+    isAuthenticated,
+  } = useAuth();
+  const { activeTheme } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const isAddAccountQuery = searchParams.get('addAccount') === 'true';
+
+  // If sessions exist and user is NOT explicitly requesting ?addAccount=true, show profile chooser
+  const [isAddingAccount, setIsAddingAccount] = useState(() => {
+    return isAddAccountQuery || sessions.length === 0;
+  });
+
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -40,16 +67,12 @@ export function LoginPage() {
   const [formError, setFormError] = useState('');
   const [demoLoading, setDemoLoading] = useState('');
 
-  const { login, register, demoLogin, isAuthenticated } = useAuth();
-  const { activeTheme } = useTheme();
-  const navigate = useNavigate();
-
-  // If already authenticated, redirect
-  React.useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
+  // When query parameter changes to addAccount, toggle to adding account
+  useEffect(() => {
+    if (isAddAccountQuery) {
+      setIsAddingAccount(true);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAddAccountQuery]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -192,49 +215,191 @@ export function LoginPage() {
           {/* Right Auth Card */}
           <div className="lg:col-span-7">
             <div className="theme-card rounded-2xl border p-6 sm:p-8 shadow-2xl backdrop-blur-md">
-              {/* Tab Selector */}
-              <div className="flex items-center p-1 rounded-xl theme-surface-alt border theme-border mb-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSignUp(false);
-                    setFormError('');
-                  }}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                    !isSignUp
-                      ? 'theme-btn-primary shadow-sm'
-                      : 'text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]'
-                  }`}
-                >
-                  Sign In to Workspace
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSignUp(true);
-                    setFormError('');
-                  }}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                    isSignUp
-                      ? 'theme-btn-primary shadow-sm'
-                      : 'text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]'
-                  }`}
-                >
-                  Create New Account
-                </button>
-              </div>
+              {/* PROFILE SWITCHER VIEW */}
+              {!isAddingAccount && sessions.length > 0 ? (
+                <div>
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div className="w-8 h-8 rounded-xl theme-subtle-badge flex items-center justify-center theme-accent-text">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold tracking-tight">Switch User Profile</h2>
+                      <p className="text-xs text-[var(--theme-text-muted)]">
+                        Select an active profile to access the workspace, or log in with another account.
+                      </p>
+                    </div>
+                  </div>
 
-              {/* Title */}
-              <div className="mb-6">
-                <h2 className="text-xl font-bold tracking-tight">
-                  {isSignUp ? 'Join your development team' : 'Welcome back, developer'}
-                </h2>
-                <p className="text-xs text-[var(--theme-text-muted)] mt-1">
-                  {isSignUp
-                    ? 'Enter your credentials to register into MongoDB Atlas database.'
-                    : 'Log in with your email or pick a 1-click demo account below.'}
-                </p>
-              </div>
+                  {/* Profile List */}
+                  <div className="space-y-2.5 my-5">
+                    {sessions.map((session) => {
+                      const isActive =
+                        user &&
+                        ((user._id && session.user._id && user._id === session.user._id) ||
+                          user.email === session.user.email);
+
+                      return (
+                        <div
+                          key={session.user._id || session.user.email}
+                          onClick={() => {
+                            switchAccount(session.user._id || session.user.email);
+                            navigate('/');
+                          }}
+                          className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer group ${
+                            isActive
+                              ? 'border-indigo-500 bg-indigo-50/15 dark:bg-indigo-950/20 shadow-sm'
+                              : 'theme-border hover:theme-surface-alt'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <img
+                              src={
+                                session.user.avatar ||
+                                `https://api.dicebear.com/7.x/bottts/svg?seed=${session.user.email}`
+                              }
+                              alt={session.user.name}
+                              className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-700 flex-shrink-0"
+                            />
+                            <div className="min-w-0 text-left">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-[var(--theme-text)] truncate">
+                                  {session.user.name}
+                                </span>
+                                {isActive && (
+                                  <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full theme-btn-primary flex items-center gap-0.5">
+                                    <Check className="w-2.5 h-2.5" /> Active
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[11px] text-[var(--theme-text-muted)] truncate">
+                                {session.user.email}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-[10px] font-mono capitalize px-2 py-0.5 rounded bg-black/5 dark:bg-white/5 text-[var(--theme-text-muted)]">
+                              {session.user.role || 'developer'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                logout(session.user._id || session.user.email);
+                              }}
+                              title="Sign out of this profile"
+                              className="p-1 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Switcher Actions */}
+                  <div className="space-y-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingAccount(true);
+                        setIsSignUp(false);
+                      }}
+                      className="w-full py-2.5 px-4 rounded-xl text-xs font-bold theme-btn-primary flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-98 transition-all"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      <span>Log in to Another Account</span>
+                    </button>
+
+                    {isAuthenticated && user && (
+                      <button
+                        type="button"
+                        onClick={() => navigate('/')}
+                        className="w-full py-2 px-4 rounded-xl text-xs font-semibold border theme-border hover:theme-surface-alt flex items-center justify-center gap-1.5 transition-colors text-[var(--theme-text)]"
+                      >
+                        <span>Continue to Workspace as {user.name}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logoutAll();
+                        setIsAddingAccount(true);
+                      }}
+                      className="w-full py-1.5 text-center text-[11px] text-[var(--theme-text-muted)] hover:text-rose-500 transition-colors"
+                    >
+                      Sign out of all profiles
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* AUTHENTICATION FORM VIEW */
+                <div>
+                  {sessions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingAccount(false)}
+                      className="inline-flex items-center gap-1.5 text-xs text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] mb-4 font-semibold transition-colors"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>&larr; Switch Profile ({sessions.length} active sessions)</span>
+                    </button>
+                  )}
+
+                  {/* Tab Selector */}
+                  <div className="flex items-center p-1 rounded-xl theme-surface-alt border theme-border mb-6">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSignUp(false);
+                        setFormError('');
+                      }}
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                        !isSignUp
+                          ? 'theme-btn-primary shadow-sm'
+                          : 'text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]'
+                      }`}
+                    >
+                      {sessions.length > 0 ? 'Log in Account' : 'Sign In to Workspace'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSignUp(true);
+                        setFormError('');
+                      }}
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                        isSignUp
+                          ? 'theme-btn-primary shadow-sm'
+                          : 'text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]'
+                      }`}
+                    >
+                      Create New Account
+                    </button>
+                  </div>
+
+                  {/* Title */}
+                  <div className="mb-6">
+                    <h2 className="text-xl font-bold tracking-tight">
+                      {sessions.length > 0
+                        ? isSignUp
+                          ? 'Register another account'
+                          : 'Sign in to an additional account'
+                        : isSignUp
+                        ? 'Join your development team'
+                        : 'Welcome back, developer'}
+                    </h2>
+                    <p className="text-xs text-[var(--theme-text-muted)] mt-1">
+                      {sessions.length > 0
+                        ? 'You can switch between all logged-in profiles anytime from the navigation bar.'
+                        : isSignUp
+                        ? 'Enter your credentials to register into MongoDB Atlas database.'
+                        : 'Log in with your email or pick a 1-click demo account below.'}
+                    </p>
+                  </div>
 
               {/* Error Alert */}
               {formError && (
@@ -379,9 +544,11 @@ export function LoginPage() {
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
-      </main>
+      </div>
+    </div>
+  </main>
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-[var(--theme-text-muted)] border-t theme-border theme-header">

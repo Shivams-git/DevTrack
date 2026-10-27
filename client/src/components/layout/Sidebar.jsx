@@ -11,6 +11,7 @@ import {
   PanelLeftClose,
   User,
   LogIn,
+  Users,
 } from 'lucide-react';
 import { useIssues } from '../../context/IssueContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -32,7 +33,7 @@ export function Sidebar({
   onWidthChange,
 }) {
   const { health, issues } = useIssues();
-  const { user, isAuthenticated } = useAuth();
+  const { user, sessions, isAuthenticated } = useAuth();
   const dbStatus = health?.database?.status || 'checking';
   const isAtlas = dbStatus === 'connected';
 
@@ -185,19 +186,31 @@ export function Sidebar({
           </div>
 
           {/* User Account Tile */}
-          <div className="p-2.5 rounded-xl border theme-border bg-black/20 flex items-center justify-between">
+          <div className="p-2.5 rounded-xl border theme-border bg-black/20 flex items-center justify-between gap-2">
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-2 min-w-0">
-                <img
-                  src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`}
-                  alt={user.name}
-                  className="w-7 h-7 rounded-lg bg-white/10 flex-shrink-0"
-                />
-                <div className="min-w-0 truncate">
-                  <div className="text-xs font-semibold text-white truncate">{user.name}</div>
-                  <div className="text-[10px] text-slate-400 capitalize truncate">{user.role}</div>
+              <>
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <img
+                    src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`}
+                    alt={user.name}
+                    className="w-7 h-7 rounded-lg bg-white/10 flex-shrink-0"
+                  />
+                  <div className="min-w-0 truncate">
+                    <div className="text-xs font-semibold text-white truncate">{user.name}</div>
+                    <div className="text-[10px] text-slate-400 capitalize truncate">{user.role}</div>
+                  </div>
                 </div>
-              </div>
+
+                <Link
+                  to={sessions && sessions.length > 1 ? '/login' : '/login?addAccount=true'}
+                  onClick={onClose}
+                  className="px-2 py-1 rounded-lg text-[10px] font-semibold border border-white/10 hover:border-white/30 text-slate-300 hover:text-white flex items-center gap-1 transition-all flex-shrink-0"
+                  title={sessions && sessions.length > 1 ? `Switch profile (${sessions.length} active)` : 'Add another account'}
+                >
+                  <Users className="w-3 h-3 theme-accent-text" />
+                  <span>{sessions && sessions.length > 1 ? `Switch (${sessions.length})` : '+ Add'}</span>
+                </Link>
+              </>
             ) : (
               <Link
                 to="/login"
