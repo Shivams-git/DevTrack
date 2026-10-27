@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export function ActivityPage() {
-  const { openDetailModal, issues } = useIssues();
+  const { openDetailModal, issues, testMode } = useIssues();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +36,7 @@ export function ActivityPage() {
 
   useEffect(() => {
     fetchActivities();
-  }, [issues]);
+  }, [issues, testMode]);
 
   const handleIssueClick = (issueKey) => {
     if (!issueKey) return;

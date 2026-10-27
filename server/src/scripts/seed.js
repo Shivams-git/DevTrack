@@ -54,7 +54,7 @@ export async function runSeed({ quiet = false } = {}) {
     }
 
     for (const item of sampleIssues) {
-      await Issue.create(item);
+      await Issue.create({ ...item, isDemo: true, userId: null });
     }
 
     // Seed realistic activity records
@@ -66,6 +66,8 @@ export async function runSeed({ quiet = false } = {}) {
         issueKey: item.key,
         metadata: { status: item.status, priority: item.priority },
         createdAt: item.createdAt,
+        isDemo: true,
+        userId: null,
       });
     }
 
@@ -75,7 +77,7 @@ export async function runSeed({ quiet = false } = {}) {
     // In-memory demo store mode
     memoryStore.reset();
     for (const item of sampleIssues) {
-      memoryStore.createIssue(item);
+      memoryStore.createIssue({ ...item, isDemo: true, userId: null });
     }
 
     const recentSample = sampleIssues.slice(0, 5);
@@ -85,6 +87,8 @@ export async function runSeed({ quiet = false } = {}) {
         description: `Created issue ${item.key}: "${item.title}" [${item.priority}]`,
         issueKey: item.key,
         metadata: { status: item.status, priority: item.priority },
+        isDemo: true,
+        userId: null,
       });
     }
 

@@ -1,15 +1,22 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api.js';
+import { useAuth } from './AuthContext.jsx';
 
 const IssueContext = createContext();
 
 export function IssueProvider({ children }) {
+  const { user } = useAuth();
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [health, setHealth] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshIndex, setRefreshIndex] = useState(0);
+
+  // Test Mode toggle state
+  const [testMode, setTestMode] = useState(() => {
+    return localStorage.getItem('devtrack_test_mode') === 'true';
+  });
 
   // Modals & Dialogs
   const [activeModal, setActiveModal] = useState({ type: null, issue: null });
@@ -63,9 +70,22 @@ export function IssueProvider({ children }) {
     }
   }, [addToast]);
 
+  const toggleTestMode = useCallback((forcedVal) => {
+    setTestMode((prev) => {
+      const next = typeof forcedVal === 'boolean' ? forcedVal : !prev;
+      localStorage.setItem('devtrack_test_mode', String(next));
+      if (next) {
+        addToast('Test Mode enabled: displaying sample demo issues.', 'info');
+      } else {
+        addToast('Test Mode disabled: displaying your personal issues.', 'info');
+      }
+      return next;
+    });
+  }, [addToast]);
+
   useEffect(() => {
     refreshIssues();
-  }, [refreshIssues, refreshIndex]);
+  }, [refreshIssues, refreshIndex, user, testMode]);
 
   const triggerRefresh = useCallback(() => {
     setRefreshIndex((prev) => prev + 1);
@@ -188,6 +208,9 @@ export function IssueProvider({ children }) {
         handleUpdateIssue,
         handleStatusChange,
         handleDeleteIssue,
+        testMode,
+        toggleTestMode,
+        setTestMode,
       }}
     >
       {children}

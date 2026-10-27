@@ -12,6 +12,7 @@ import {
   User,
   LogIn,
   Users,
+  FlaskConical,
 } from 'lucide-react';
 import { useIssues } from '../../context/IssueContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -32,7 +33,7 @@ export function Sidebar({
   width = 256,
   onWidthChange,
 }) {
-  const { health, issues } = useIssues();
+  const { health, issues, testMode, toggleTestMode } = useIssues();
   const { user, sessions, isAuthenticated } = useAuth();
   const dbStatus = health?.database?.status || 'checking';
   const isAtlas = dbStatus === 'connected';
@@ -184,6 +185,27 @@ export function Sidebar({
               />
             </div>
           </div>
+
+          {/* Test Mode Toggle in Sidebar */}
+          <button
+            onClick={() => toggleTestMode()}
+            className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+              testMode
+                ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-sm'
+                : 'bg-black/20 border-white/5 text-slate-400 hover:text-slate-200 hover:bg-black/30'
+            }`}
+            title={testMode ? 'Click to disable Test Mode and view personal issues' : 'Click to enable Test Mode and view sample demo issues'}
+          >
+            <div className="flex items-center gap-2">
+              <FlaskConical className={`w-3.5 h-3.5 ${testMode ? 'text-amber-400 animate-pulse' : 'text-slate-500'}`} />
+              <span>{testMode ? 'Test Mode Active' : 'Test Mode: Off'}</span>
+            </div>
+            <span
+              className={`w-2 h-2 rounded-full ${
+                testMode ? 'bg-amber-400 ring-2 ring-amber-400/40' : 'bg-slate-600'
+              }`}
+            />
+          </button>
 
           {/* User Account Tile */}
           <div className="p-2.5 rounded-xl border theme-border bg-black/20 flex items-center justify-between gap-2">

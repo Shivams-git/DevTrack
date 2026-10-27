@@ -1,18 +1,27 @@
 import * as issueService from '../services/issueService.js';
 
+function getTestMode(req) {
+  return req.headers['x-test-mode'] === 'true' || req.query.testMode === 'true';
+}
+
 export async function getIssues(req, res, next) {
   try {
     const { search, status, priority, type, sort, order, page, limit } = req.query;
-    const result = await issueService.getAllIssues({
-      search,
-      status,
-      priority,
-      type,
-      sort,
-      order,
-      page,
-      limit,
-    });
+    const isTestMode = getTestMode(req);
+    const result = await issueService.getAllIssues(
+      {
+        search,
+        status,
+        priority,
+        type,
+        sort,
+        order,
+        page,
+        limit,
+      },
+      req.user || null,
+      isTestMode
+    );
     res.json({
       success: true,
       data: result.issues,
@@ -21,6 +30,7 @@ export async function getIssues(req, res, next) {
         page: result.page,
         pages: result.pages,
       },
+      isTestMode,
     });
   } catch (error) {
     next(error);
@@ -29,7 +39,8 @@ export async function getIssues(req, res, next) {
 
 export async function getIssueById(req, res, next) {
   try {
-    const issue = await issueService.getIssueById(req.params.id);
+    const isTestMode = getTestMode(req);
+    const issue = await issueService.getIssueById(req.params.id, req.user || null, isTestMode);
     if (!issue) {
       return res.status(404).json({
         success: false,
@@ -47,7 +58,8 @@ export async function getIssueById(req, res, next) {
 
 export async function createIssue(req, res, next) {
   try {
-    const created = await issueService.createIssue(req.body);
+    const isTestMode = getTestMode(req);
+    const created = await issueService.createIssue(req.body, req.user || null, isTestMode);
     res.status(201).json({
       success: true,
       data: created,
@@ -60,7 +72,8 @@ export async function createIssue(req, res, next) {
 
 export async function updateIssue(req, res, next) {
   try {
-    const updated = await issueService.updateIssue(req.params.id, req.body);
+    const isTestMode = getTestMode(req);
+    const updated = await issueService.updateIssue(req.params.id, req.body, req.user || null, isTestMode);
     if (!updated) {
       return res.status(404).json({
         success: false,
@@ -79,7 +92,8 @@ export async function updateIssue(req, res, next) {
 
 export async function deleteIssue(req, res, next) {
   try {
-    const deleted = await issueService.deleteIssue(req.params.id);
+    const isTestMode = getTestMode(req);
+    const deleted = await issueService.deleteIssue(req.params.id, req.user || null, isTestMode);
     if (!deleted) {
       return res.status(404).json({
         success: false,

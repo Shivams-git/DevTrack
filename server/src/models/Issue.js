@@ -73,6 +73,17 @@ const issueSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
+    isDemo: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -82,5 +93,7 @@ const issueSchema = new mongoose.Schema(
 );
 
 issueSchema.index({ title: 'text', description: 'text', key: 'text' });
+issueSchema.index({ userId: 1, key: 1 });
+issueSchema.index({ isDemo: 1, createdAt: -1 });
 
 export const Issue = mongoose.model('Issue', issueSchema);

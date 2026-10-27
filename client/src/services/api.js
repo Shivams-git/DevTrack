@@ -2,8 +2,13 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').r
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
+  const token = localStorage.getItem('devtrack_token');
+  const isTestMode = localStorage.getItem('devtrack_test_mode') === 'true';
+
   const headers = {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(isTestMode ? { 'x-test-mode': 'true' } : {}),
     ...(options.headers || {}),
   };
 

@@ -48,16 +48,31 @@ function resolveIdQuery(idOrKey) {
   return { key: String(idOrKey).toUpperCase() };
 }
 
-export async function getAllIssues(params = {}) {
+/**
+ * Build MongoDB user/demo scoping filter
+ */
+export function buildUserQuery(user = null, isTestMode = false) {
+  if (isTestMode) {
+    return { isDemo: true };
+  }
+  if (user?.id) {
+    return { userId: user.id, isDemo: { $ne: true } };
+  }
+  // Guest user in standard mode: empty by matching unassigned non-demo issues
+  return { userId: null, isDemo: { $ne: true } };
+}
+
+export async function getAllIssues(params = {}, user = null, isTestMode = false) {
   const { search, status, priority, type, sort = 'updatedAt', order = 'desc', page = 1, limit = 50 } = params;
 
   if (!isDbConnected()) {
-    const res = memoryStore.findIssues(params);
+    const res = memoryStore.findIssues(params, user, isTestMode);
     const enriched = res.issues.map((i) => enrichIssue(i));
     return { ...res, issues: enriched };
   }
 
-  const query = {};
+  const userQuery = buildUserQuery(user, isTestMode);
+  const query = { ...userQuery };
 
   if (search) {
     const trimmed = String(search).trim();
@@ -83,7 +98,6 @@ export async function getAllIssues(params = {}) {
   const sortDirection = order === 'asc' ? 1 : -1;
   const sortObj = {};
   if (sort === 'priority') {
-    // Custom sort or standard string sort
     sortObj.priority = sortDirection;
   } else if (sort === 'dueDate') {
     sortObj.dueDate = sortDirection;
@@ -112,19 +126,29 @@ export async function getAllIssues(params = {}) {
   };
 }
 
-export async function getIssueById(idOrKey) {
+export async function getIssueById(idOrKey, user = null, isTestMode = false) {
+  const baseQuery = resolveIdQuery(idOrKey);
+  const userQuery = buildUserQuery(user, isTestMode);
+
   let issue = null;
   if (isDbConnected()) {
-    issue = await Issue.findOne(resolveIdQuery(idOrKey)).lean();
+    issue = await Issue.findOne({ ...baseQuery, ...userQuery }).lean();
+    if (!issue && !isTestMode && user?.id) {
+      // Check fallback if queried by direct ObjectId
+      const direct = await Issue.findOne(baseQuery).lean();
+      if (direct && (!direct.userId || direct.userId.toString() === user.id.toString())) {
+        issue = direct;
+      }
+    }
   } else {
-    issue = memoryStore.findIssueById(idOrKey);
+    issue = memoryStore.findIssueById(idOrKey, user, isTestMode);
   }
 
   if (!issue) return null;
   return enrichIssue(issue);
 }
 
-export async function createIssue(data) {
+export async function createIssue(data, user = null, isTestMode = false) {
   let key = data.key ? String(data.key).trim().toUpperCase() : '';
   if (!key) {
     key = await generateNextKey();
@@ -142,6 +166,8 @@ export async function createIssue(data) {
   const payload = {
     ...data,
     key,
+    userId: user?.id ? user.id : null,
+    isDemo: Boolean(isTestMode),
   };
 
   let newIssue;
@@ -159,13 +185,15 @@ export async function createIssue(data) {
     description: `Created issue ${key}: "${enriched.title}" with priority ${enriched.priority}`,
     issueKey: key,
     metadata: { key, title: enriched.title, priority: enriched.priority, status: enriched.status },
+    userId: user?.id || null,
+    isDemo: Boolean(isTestMode),
   });
 
   return enriched;
 }
 
-export async function updateIssue(idOrKey, updates) {
-  const existing = await getIssueById(idOrKey);
+export async function updateIssue(idOrKey, updates, user = null, isTestMode = false) {
+  const existing = await getIssueById(idOrKey, user, isTestMode);
   if (!existing) return null;
 
   if (updates.key) {
@@ -205,6 +233,8 @@ export async function updateIssue(idOrKey, updates) {
       description: `Moved ${enriched.key} from ${existing.status} to ${updates.status}`,
       issueKey: enriched.key,
       metadata: { from: existing.status, to: updates.status },
+      userId: user?.id || null,
+      isDemo: Boolean(isTestMode),
     });
   } else if (updates.priority && updates.priority !== existing.priority) {
     await logActivity({
@@ -212,6 +242,8 @@ export async function updateIssue(idOrKey, updates) {
       description: `Updated priority of ${enriched.key} from ${existing.priority} to ${updates.priority}`,
       issueKey: enriched.key,
       metadata: { from: existing.priority, to: updates.priority },
+      userId: user?.id || null,
+      isDemo: Boolean(isTestMode),
     });
   } else {
     await logActivity({
@@ -219,14 +251,16 @@ export async function updateIssue(idOrKey, updates) {
       description: `Updated details for ${enriched.key} ("${enriched.title}")`,
       issueKey: enriched.key,
       metadata: { updates },
+      userId: user?.id || null,
+      isDemo: Boolean(isTestMode),
     });
   }
 
   return enriched;
 }
 
-export async function deleteIssue(idOrKey) {
-  const existing = await getIssueById(idOrKey);
+export async function deleteIssue(idOrKey, user = null, isTestMode = false) {
+  const existing = await getIssueById(idOrKey, user, isTestMode);
   if (!existing) return null;
 
   let deleted;
@@ -242,18 +276,22 @@ export async function deleteIssue(idOrKey) {
       description: `Deleted issue ${existing.key} ("${existing.title}")`,
       issueKey: existing.key,
       metadata: { key: existing.key, title: existing.title },
+      userId: user?.id || null,
+      isDemo: Boolean(isTestMode),
     });
   }
 
   return deleted;
 }
 
-export async function getDashboardData() {
+export async function getDashboardData(user = null, isTestMode = false) {
+  const userQuery = buildUserQuery(user, isTestMode);
   let allIssues = [];
   if (isDbConnected()) {
-    allIssues = await Issue.find().sort({ updatedAt: -1 }).lean();
+    allIssues = await Issue.find(userQuery).sort({ updatedAt: -1 }).lean();
   } else {
-    allIssues = memoryStore.issues;
+    const res = memoryStore.findIssues({ limit: 1000 }, user, isTestMode);
+    allIssues = res.issues;
   }
 
   const enriched = allIssues.map((i) => enrichIssue(i));
@@ -309,15 +347,18 @@ export async function getDashboardData() {
     urgentTasks,
     upcomingDeadlines,
     recentlyUpdated,
+    isTestMode,
   };
 }
 
-export async function getInsightsData() {
+export async function getInsightsData(user = null, isTestMode = false) {
+  const userQuery = buildUserQuery(user, isTestMode);
   let allIssues = [];
   if (isDbConnected()) {
-    allIssues = await Issue.find().lean();
+    allIssues = await Issue.find(userQuery).lean();
   } else {
-    allIssues = memoryStore.issues;
+    const res = memoryStore.findIssues({ limit: 1000 }, user, isTestMode);
+    allIssues = res.issues;
   }
 
   const enriched = allIssues.map((i) => enrichIssue(i));
@@ -366,5 +407,6 @@ export async function getInsightsData() {
     statusDistribution,
     priorityDistribution,
     typeDistribution,
+    isTestMode,
   };
 }

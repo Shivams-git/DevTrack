@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import * as issueController from '../controllers/issueController.js';
 import { validateCreateIssue, validateUpdateIssue } from '../middleware/validate.js';
+import { optionalAuth } from '../middleware/auth.js';
 
 const router = Router();
+
+router.use(optionalAuth);
 
 router.get('/', issueController.getIssues);
 router.post('/', validateCreateIssue, issueController.createIssue);

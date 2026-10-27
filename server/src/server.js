@@ -10,8 +10,31 @@ async function startServer() {
   // Attempt database connection
   const dbOk = await connectDB();
 
-  // If running in local fallback mode (no MongoDB instance connected), populate demo store
-  if (!dbOk || !isDbConnected()) {
+  if (dbOk && isDbConnected()) {
+    try {
+      const { Issue } = await import('./models/Issue.js');
+      const { Activity } = await import('./models/Activity.js');
+      // Mark any legacy unassigned issues as demo issues
+      await Issue.updateMany(
+        { isDemo: { $exists: false }, userId: { $exists: false } },
+        { $set: { isDemo: true } }
+      );
+      await Activity.updateMany(
+        { isDemo: { $exists: false }, userId: { $exists: false } },
+        { $set: { isDemo: true } }
+      );
+
+      // Ensure sample issues exist for Test Mode
+      const demoCount = await Issue.countDocuments({ isDemo: true });
+      if (demoCount === 0) {
+        logger.info('Populating sample dataset for Test Mode...');
+        await runSeed({ quiet: true });
+      }
+    } catch (migErr) {
+      logger.warn('Initial dataset check notice:', migErr.message);
+    }
+  } else {
+    // If running in local fallback mode (no MongoDB instance connected), populate demo store
     logger.warn('Initializing in-memory demo dataset so APIs are fully demonstrable...');
     await runSeed({ quiet: true });
   }

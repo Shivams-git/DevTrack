@@ -23,6 +23,8 @@
 * **👥 Multi-Account Profile Switcher**: Switch instantly between multiple developer profiles (e.g. *Full-Stack Developer*, *Tech Lead*, *QA Engineer*, *Product Manager*) without logging out.
 * **📈 Velocity Insights (`/insights`)**: Pipeline health metrics, delivery completion rate gauges, and issue distribution analytics across types and priorities.
 * **📜 Reverse-Chronological Audit Trail (`/activity`)**: Real-time event log tracking every issue created, status transition, priority adjustment, and deletion.
+* **🔒 Per-User Issue Isolation & Clean Default Workspace**: Every new user and guest account starts with a clean, empty dashboard. Issues created by each user are persistently stored and isolated in MongoDB Atlas.
+* **🧪 Interactive Test Mode**: Toggle Test Mode with one click in the navbar or sidebar to populate and explore pre-existing sample sprint tasks without polluting personal workspaces.
 * **🛡️ Dual-Mode Persistence**: Primary integration with MongoDB Atlas via Mongoose, with an automatic in-memory fallback demo store ensuring instant offline or evaluation readiness.
 * **🎨 Developer-Tailored Theme System**: Dynamic theme engine with curated dark and light palettes (*Midnight Slate*, *Neon Violet*, *Cyberpunk*, *Emerald Minimalist*).
 

@@ -12,6 +12,7 @@ import {
   UserPlus,
   Check,
   X,
+  FlaskConical,
 } from 'lucide-react';
 import { useIssues } from '../../context/IssueContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -27,7 +28,16 @@ const routeTitles = {
 };
 
 export function Navbar({ onMenuClick, isSidebarVisible, onToggleSidebar }) {
-  const { searchQuery, setSearchQuery, openCreateModal, triggerRefresh, loading, addToast } = useIssues();
+  const {
+    searchQuery,
+    setSearchQuery,
+    openCreateModal,
+    triggerRefresh,
+    loading,
+    addToast,
+    testMode,
+    toggleTestMode,
+  } = useIssues();
   const { user, sessions, isAuthenticated, otherProfiles, switchAccount, logout, logoutAll } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -128,6 +138,31 @@ export function Navbar({ onMenuClick, isSidebarVisible, onToggleSidebar }) {
             </button>
           )}
         </div>
+
+        {/* Test Mode Toggle Pill */}
+        <button
+          onClick={() => toggleTestMode()}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all border cursor-pointer ${
+            testMode
+              ? 'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400 shadow-sm'
+              : 'border-dashed theme-border text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:theme-surface-alt'
+          }`}
+          title={
+            testMode
+              ? 'Test Mode is ACTIVE: Viewing sample demo issues. Click to return to your personal workspace.'
+              : 'Test Mode is OFF: Viewing your personal workspace. Click to load sample demo issues.'
+          }
+        >
+          <FlaskConical className={`w-3.5 h-3.5 ${testMode ? 'text-amber-500 animate-pulse' : 'text-slate-400'}`} />
+          <span className="hidden sm:inline">
+            {testMode ? 'Test Mode: ON' : 'Test Mode'}
+          </span>
+          <span
+            className={`w-2 h-2 rounded-full ${
+              testMode ? 'bg-amber-500 ring-2 ring-amber-400/40' : 'bg-slate-300 dark:bg-slate-600'
+            }`}
+          />
+        </button>
 
         {/* Theme Selector Dropdown (7 Themes) */}
         <ThemeSelector />

@@ -181,6 +181,8 @@ export function AuthProvider({ children }) {
         return nextSessions;
       });
 
+      localStorage.setItem('devtrack_test_mode', 'false');
+
       return { success: true, user: userData };
     } catch (err) {
       setError(err.message);

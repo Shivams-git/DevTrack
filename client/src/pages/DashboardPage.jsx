@@ -12,6 +12,7 @@ import {
   Calendar,
   Layers,
   ChevronRight,
+  FlaskConical,
 } from 'lucide-react';
 import {
   PieChart,
@@ -86,7 +87,15 @@ function PriorityBarTooltip({ active, payload, label }) {
 }
 
 export function DashboardPage() {
-  const { openCreateModal, openDetailModal, issues, loading, triggerRefresh } = useIssues();
+  const {
+    openCreateModal,
+    openDetailModal,
+    issues,
+    loading,
+    triggerRefresh,
+    testMode,
+    toggleTestMode,
+  } = useIssues();
   const [dashboardData, setDashboardData] = useState(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
@@ -107,7 +116,7 @@ export function DashboardPage() {
     return () => {
       isMounted = false;
     };
-  }, [issues]);
+  }, [issues, testMode]);
 
   const metrics = dashboardData?.metrics || {
     total: issues.length,
@@ -160,6 +169,55 @@ export function DashboardPage() {
           <span>Create Issue</span>
         </button>
       </div>
+
+      {/* Test Mode Notification Banner */}
+      {testMode && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 px-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-medium">
+          <div className="flex items-center gap-2.5">
+            <FlaskConical className="w-4 h-4 text-amber-500 flex-shrink-0 animate-pulse" />
+            <span>
+              <strong>Test Mode Active:</strong> You are currently viewing pre-existing sample/demo issues. Your personal issues are stored safely and independently in MongoDB.
+            </span>
+          </div>
+          <button
+            onClick={() => toggleTestMode(false)}
+            className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 font-semibold border border-amber-500/30 text-amber-800 dark:text-amber-200 transition-colors flex-shrink-0 self-start sm:self-auto cursor-pointer"
+          >
+            Exit Test Mode
+          </button>
+        </div>
+      )}
+
+      {/* Empty Workspace Onboarding Box (shown when workspace has 0 issues and Test Mode is OFF) */}
+      {metrics.total === 0 && !testMode && (
+        <div className="p-8 sm:p-10 rounded-2xl border-2 border-dashed theme-border theme-card flex flex-col items-center justify-center text-center shadow-subtle">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 dark:bg-indigo-400/10 flex items-center justify-center text-indigo-500 mb-3">
+            <Layers className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-bold text-[var(--theme-text)]">
+            Your Workspace is Clean and Ready
+          </h3>
+          <p className="text-xs sm:text-sm text-[var(--theme-text-muted)] max-w-md mt-1 mb-6">
+            New accounts and guests start with a completely empty dashboard. Create your first real task, or turn on <strong>Test Mode</strong> to preview sample issues and analytics.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold theme-btn-primary shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create First Issue</span>
+            </button>
+            <button
+              onClick={() => toggleTestMode(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 active:scale-95 transition-all cursor-pointer"
+            >
+              <FlaskConical className="w-4 h-4" />
+              <span>Enable Test Mode (Load Demo Issues)</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">

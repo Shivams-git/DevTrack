@@ -91,8 +91,17 @@ class MemoryStore {
     this.counter = 1;
   }
 
-  findIssues({ search, status, priority, type, sort = 'updatedAt', order = 'desc', page = 1, limit = 50 } = {}) {
+  findIssues({ search, status, priority, type, sort = 'updatedAt', order = 'desc', page = 1, limit = 50 } = {}, user = null, isTestMode = false) {
     let result = [...this.issues];
+
+    // Filter by testMode or user
+    if (isTestMode) {
+      result = result.filter((i) => i.isDemo === true);
+    } else if (user?.id) {
+      result = result.filter((i) => (i.userId === user.id || i.userId === user._id) && !i.isDemo);
+    } else {
+      result = result.filter((i) => !i.userId && !i.isDemo);
+    }
 
     if (search) {
       const q = search.toLowerCase();
@@ -146,8 +155,16 @@ class MemoryStore {
     };
   }
 
-  findIssueById(idOrKey) {
-    return this.issues.find((i) => i._id === idOrKey || i.id === idOrKey || i.key === idOrKey) || null;
+  findIssueById(idOrKey, user = null, isTestMode = false) {
+    return (
+      this.issues.find((i) => {
+        const matchesKey = i._id === idOrKey || i.id === idOrKey || i.key === idOrKey;
+        if (!matchesKey) return false;
+        if (isTestMode) return i.isDemo === true;
+        if (user?.id) return (i.userId === user.id || i.userId === user._id) && !i.isDemo;
+        return !i.userId && !i.isDemo;
+      }) || null
+    );
   }
 
   createIssue(data) {
@@ -169,6 +186,8 @@ class MemoryStore {
       estimatedHours: data.estimatedHours ? Number(data.estimatedHours) : null,
       isBlocked: Boolean(data.isBlocked),
       blockingReason: data.blockingReason || '',
+      userId: data.userId || null,
+      isDemo: Boolean(data.isDemo),
       createdAt: now,
       updatedAt: now,
     };
@@ -206,13 +225,15 @@ class MemoryStore {
     return deleted;
   }
 
-  recordActivity({ action, description, issueKey, metadata = {} }) {
+  recordActivity({ action, description, issueKey, metadata = {}, userId = null, isDemo = false }) {
     const activity = {
       _id: 'act_' + Math.random().toString(36).substring(2, 9),
       action,
       description,
       issueKey: issueKey || '',
       metadata,
+      userId: userId || null,
+      isDemo: Boolean(isDemo),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -220,8 +241,16 @@ class MemoryStore {
     return activity;
   }
 
-  findActivities(limit = 30) {
-    return this.activities.slice(0, limit);
+  findActivities(limit = 30, user = null, isTestMode = false) {
+    let result = [...this.activities];
+    if (isTestMode) {
+      result = result.filter((a) => a.isDemo === true);
+    } else if (user?.id) {
+      result = result.filter((a) => (a.userId === user.id || a.userId === user._id) && !a.isDemo);
+    } else {
+      result = result.filter((a) => !a.userId && !a.isDemo);
+    }
+    return result.slice(0, limit);
   }
 }
 

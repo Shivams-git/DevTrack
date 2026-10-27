@@ -23,6 +23,17 @@ const activitySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: {},
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
+    isDemo: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -32,5 +43,7 @@ const activitySchema = new mongoose.Schema(
 );
 
 activitySchema.index({ createdAt: -1 });
+activitySchema.index({ userId: 1, createdAt: -1 });
+activitySchema.index({ isDemo: 1, createdAt: -1 });
 
 export const Activity = mongoose.model('Activity', activitySchema);

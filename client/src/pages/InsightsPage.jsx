@@ -78,7 +78,7 @@ function IssueTypeTooltip({ active, payload, label }) {
 }
 
 export function InsightsPage() {
-  const { issues } = useIssues();
+  const { issues, testMode } = useIssues();
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -99,7 +99,7 @@ export function InsightsPage() {
     return () => {
       mounted = false;
     };
-  }, [issues]);
+  }, [issues, testMode]);
 
   const total = insights?.total || issues.length;
   const completed = insights?.completed || issues.filter((i) => i.status === 'Done').length;

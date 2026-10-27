@@ -18,6 +18,7 @@ import {
   ShieldAlert,
   ChevronLeft,
   ChevronRight,
+  FlaskConical,
 } from 'lucide-react';
 
 const STATUS_OPTIONS = ['All', 'Backlog', 'Todo', 'In Progress', 'In Review', 'Done'];
@@ -42,6 +43,8 @@ export function IssuesPage() {
     handleStatusChange,
     handleDeleteIssue,
     confirmAction,
+    testMode,
+    toggleTestMode,
   } = useIssues();
 
   const [selectedStatus, setSelectedStatus] = useState('All');
@@ -113,6 +116,24 @@ export function IssuesPage() {
 
   return (
     <div className="space-y-4">
+      {/* Test Mode Notification Banner */}
+      {testMode && (
+        <div className="flex items-center justify-between p-2.5 px-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-medium">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 animate-pulse" />
+            <span>
+              <strong>Test Mode Active:</strong> Displaying sample demo issues. Switch off Test Mode anytime to view your personal issues.
+            </span>
+          </div>
+          <button
+            onClick={() => toggleTestMode(false)}
+            className="px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 font-semibold border border-amber-500/30 text-amber-800 dark:text-amber-200 transition-colors cursor-pointer"
+          >
+            Exit
+          </button>
+        </div>
+      )}
+
       {/* Filters and Controls */}
       <div className="p-3.5 rounded-2xl theme-card border theme-border shadow-subtle space-y-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -368,12 +389,46 @@ export function IssuesPage() {
           </div>
         ) : (
           <div className="p-8">
-            <EmptyState
-              title="No issues match your filters"
-              description="Try adjusting your search criteria or reset filters to see all issues."
-              actionLabel="Reset Filters"
-              onAction={resetFilters}
-            />
+            {issues.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed theme-border rounded-2xl theme-card shadow-subtle">
+                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-3">
+                  <FlaskConical className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-[var(--theme-text)] mb-1">
+                  {testMode ? 'No demo issues found' : 'Your workspace is empty'}
+                </h3>
+                <p className="text-xs sm:text-sm text-[var(--theme-text-muted)] max-w-sm mb-5">
+                  {testMode
+                    ? 'No sample demo issues are currently loaded.'
+                    : 'DevTrack starts with an empty dashboard for new accounts and guests. Create your first issue or switch on Test Mode to view sample tasks.'}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    onClick={openCreateModal}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold theme-btn-primary rounded-xl shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Create First Issue</span>
+                  </button>
+                  {!testMode && (
+                    <button
+                      onClick={() => toggleTestMode(true)}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 rounded-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                    >
+                      <FlaskConical className="w-4 h-4" />
+                      <span>Switch to Test Mode</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <EmptyState
+                title="No issues match your filters"
+                description="Try adjusting your search criteria or reset filters to see all issues."
+                actionLabel="Reset Filters"
+                onAction={resetFilters}
+              />
+            )}
           </div>
         )}
 

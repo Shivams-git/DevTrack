@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useIssues } from '../context/IssueContext.jsx';
 import { KanbanColumn } from '../components/board/KanbanColumn.jsx';
-import { Filter, X, Plus, Search } from 'lucide-react';
+import { Filter, X, Plus, Search, FlaskConical } from 'lucide-react';
 
 import { matchesSearch } from '../utils/formatters.js';
 
@@ -17,6 +17,8 @@ export function BoardPage() {
     openCreateModal,
     searchQuery,
     setSearchQuery,
+    testMode,
+    toggleTestMode,
   } = useIssues();
 
   const [selectedPriority, setSelectedPriority] = useState('All');
@@ -114,6 +116,53 @@ export function BoardPage() {
           </button>
         </div>
       </div>
+
+      {/* Test Mode Notification */}
+      {testMode && (
+        <div className="flex items-center justify-between p-2.5 px-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-medium flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 animate-pulse" />
+            <span>
+              <strong>Test Mode Active:</strong> Viewing sample sprint tasks. Drag and drop cards between columns to test real-time workflow status updates.
+            </span>
+          </div>
+          <button
+            onClick={() => toggleTestMode(false)}
+            className="px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 font-semibold border border-amber-500/30 text-amber-800 dark:text-amber-200 transition-colors cursor-pointer"
+          >
+            Exit
+          </button>
+        </div>
+      )}
+
+      {/* Empty Board Helper Banner */}
+      {issues.length === 0 && !loading && !testMode && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 px-4 rounded-xl border border-dashed theme-border theme-card text-xs flex-shrink-0">
+          <div>
+            <span className="font-semibold text-[var(--theme-text)]">
+              Your Kanban board is currently clean.
+            </span>{' '}
+            <span className="text-[var(--theme-text-muted)]">
+              Click &quot;+ Add Card&quot; to create your first personal issue, or turn on Test Mode to populate sample sprint tasks.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={openCreateModal}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold theme-btn-primary transition-all cursor-pointer"
+            >
+              + Add Card
+            </button>
+            <button
+              onClick={() => toggleTestMode(true)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span>Test Mode</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Kanban Board Columns Area */}
       <div className="flex-1 overflow-x-auto pb-4">
