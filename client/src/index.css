@@ -7,8 +7,13 @@
   --theme-surface: #ffffff;
   --theme-surface-alt: #f5f3ff;
   --theme-surface-hover: #ede9fe;
-  --theme-sidebar: #1b0e33;
-  --theme-sidebar-border: #361b62;
+  --theme-sidebar: #ffffff;
+  --theme-sidebar-border: #e9d5ff;
+  --theme-sidebar-text: #270d47;
+  --theme-sidebar-muted: #7e52a0;
+  --theme-sidebar-surface: #faf5ff;
+  --theme-sidebar-surface-border: #e9d5ff;
+  --theme-sidebar-hover: #f5f3ff;
   --theme-header: rgba(255, 255, 255, 0.92);
   --theme-border: #e9d5ff;
   --theme-border-strong: #d8b4fe;
@@ -66,6 +71,12 @@
 .theme-sidebar {
   background-color: var(--theme-sidebar) !important;
   border-color: var(--theme-sidebar-border) !important;
+  color: var(--theme-sidebar-text) !important;
+}
+
+.theme-sidebar-surface {
+  background-color: var(--theme-sidebar-surface) !important;
+  border-color: var(--theme-sidebar-surface-border) !important;
 }
 
 .theme-card {
