@@ -28,6 +28,15 @@ export async function connectDB() {
       isConnected = false;
     });
 
+    mongoose.connection.on('reconnected', () => {
+      logger.info('MongoDB reconnected successfully');
+      isConnected = true;
+    });
+
+    mongoose.connection.on('connected', () => {
+      isConnected = true;
+    });
+
     return true;
   } catch (error) {
     logger.error(`MongoDB connection failed: ${error.message}`);

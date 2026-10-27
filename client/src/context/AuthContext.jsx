@@ -1,6 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '') + '/api';
+
+async function parseResponse(res) {
+  const text = await res.text();
+  let json = {};
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch (err) {
+    json = { error: text || `Server error (${res.status})` };
+  }
+  return { ok: res.ok, status: res.status, data: json };
+}
 
 const AuthContext = createContext();
 
@@ -33,8 +44,9 @@ export function AuthProvider({ children }) {
           },
         });
 
-        if (res.ok) {
-          const json = await res.json();
+        const { ok, data: json } = await parseResponse(res);
+
+        if (ok && json.data) {
           setUser(json.data);
           localStorage.setItem('devtrack_user', JSON.stringify(json.data));
         } else {
@@ -60,8 +72,8 @@ export function AuthProvider({ children }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const json = await res.json();
-      if (!res.ok) {
+      const { ok, data: json } = await parseResponse(res);
+      if (!ok) {
         throw new Error(json.error || 'Login failed. Please check your credentials.');
       }
 
@@ -86,8 +98,8 @@ export function AuthProvider({ children }) {
         body: JSON.stringify({ name, email, password, role, team, bio }),
       });
 
-      const json = await res.json();
-      if (!res.ok) {
+      const { ok, data: json } = await parseResponse(res);
+      if (!ok) {
         throw new Error(json.error || 'Registration failed.');
       }
 
