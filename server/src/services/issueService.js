@@ -7,17 +7,32 @@ import { logActivity } from './activityService.js';
 import { STATUSES, PRIORITIES, ACTIVITY_ACTIONS } from '../utils/constants.js';
 
 /**
- * Generate next sequential issue key (e.g., DEV-001)
+ * Generate next sequential issue key (e.g., DEV-015)
+ * Inspects all existing issue keys to reliably determine the true maximum number.
  */
 async function generateNextKey() {
   if (isDbConnected()) {
-    const lastIssue = await Issue.findOne({}, { key: 1 }).sort({ createdAt: -1 }).lean();
-    if (!lastIssue || !lastIssue.key) {
-      return 'DEV-001';
+    const issues = await Issue.find({}, { key: 1 }).lean();
+    let maxNum = 0;
+    for (const item of issues) {
+      if (item.key) {
+        const match = item.key.match(/DEV-(\d+)/i);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > maxNum) {
+            maxNum = num;
+          }
+        }
+      }
     }
-    const match = lastIssue.key.match(/DEV-(\d+)/i);
-    const nextNum = match ? parseInt(match[1], 10) + 1 : 1;
-    return `DEV-${String(nextNum).padStart(3, '0')}`;
+
+    let nextNum = maxNum + 1;
+    let candidate = `DEV-${String(nextNum).padStart(3, '0')}`;
+    while (await Issue.exists({ key: candidate })) {
+      nextNum++;
+      candidate = `DEV-${String(nextNum).padStart(3, '0')}`;
+    }
+    return candidate;
   } else {
     return memoryStore.generateKey();
   }

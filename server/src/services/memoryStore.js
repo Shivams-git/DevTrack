@@ -8,9 +8,26 @@ class MemoryStore {
   }
 
   generateKey() {
-    const key = `DEV-${String(this.counter).padStart(3, '0')}`;
-    this.counter++;
-    return key;
+    let maxNum = 0;
+    for (const item of this.issues) {
+      if (item.key) {
+        const match = item.key.match(/DEV-(\d+)/i);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > maxNum) {
+            maxNum = num;
+          }
+        }
+      }
+    }
+    let nextNum = Math.max(maxNum + 1, this.counter);
+    let candidate = `DEV-${String(nextNum).padStart(3, '0')}`;
+    while (this.issues.some((i) => i.key === candidate)) {
+      nextNum++;
+      candidate = `DEV-${String(nextNum).padStart(3, '0')}`;
+    }
+    this.counter = nextNum + 1;
+    return candidate;
   }
 
   reset() {
