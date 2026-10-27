@@ -19,14 +19,16 @@
 
 * **📋 Interactive Kanban Board (`/board`)**: Five continuous delivery stages (`Backlog`, `Todo`, `In Progress`, `In Review`, `Done`) featuring native HTML5 drag-and-drop, quick status selectors, and optimistic UI updates.
 * **🔥 Dynamic Urgency Scoring Engine**: Calculates objective, integer-based urgency scores ($0 - 120+$) based on priority weights, overdue penalties, due-date proximity, blocked flags, and in-progress stagnation.
-* **📊 Metrics Dashboard (`/`)**: Aggregated metrics, interactive Recharts distribution donut and priority bar charts with high-contrast glassmorphism tooltips, highest-urgency tasks, and a 7-day deadline tracker.
-* **👥 Multi-Account Profile Switcher**: Switch instantly between multiple developer profiles (e.g. *Full-Stack Developer*, *Tech Lead*, *QA Engineer*, *Product Manager*) without logging out.
+* **📊 Metrics Dashboard (`/`)**: Aggregated metrics, interactive Recharts distribution donut and priority bar charts with high-contrast tooltips, highest-urgency tasks, and a 7-day deadline tracker.
+* **👥 Multi-Account Profile Switcher**: Switch instantly between multiple developer profiles (e.g. *Alex Rivera* - Tech Lead, *Sarah Chen* - Full-Stack Dev) without logging out.
 * **📈 Velocity Insights (`/insights`)**: Pipeline health metrics, delivery completion rate gauges, and issue distribution analytics across types and priorities.
 * **📜 Reverse-Chronological Audit Trail (`/activity`)**: Real-time event log tracking every issue created, status transition, priority adjustment, and deletion.
 * **🔒 Per-User Issue Isolation & Clean Default Workspace**: Every new user and guest account starts with a clean, empty dashboard. Issues created by each user are persistently stored and isolated in MongoDB Atlas.
-* **🧪 Interactive Test Mode**: Toggle Test Mode with one click in the navbar or sidebar to populate and explore pre-existing sample sprint tasks without polluting personal workspaces.
+* **🧪 Interactive Test Mode**: Toggle Test Mode with one click in the navbar or sidebar to populate and explore pre-existing sample sprint tasks instantly without waiting for database responses or polluting personal workspaces.
 * **🛡️ Dual-Mode Persistence**: Primary integration with MongoDB Atlas via Mongoose, with an automatic in-memory fallback demo store ensuring instant offline or evaluation readiness.
-* **🎨 Developer-Tailored Theme System**: Dynamic theme engine with curated dark and light palettes (*Midnight Slate*, *Neon Violet*, *Cyberpunk*, *Emerald Minimalist*).
+* **🎨 7 Developer Themes with Instant Database Sync**: Grouped by Light (*Tokyo Lilac* [default], *Clean Studio*, *Sunset Amber*) and Dark (*Midnight Slate*, *Obsidian Cyber*, *Nordic Aurora*, *Rosewood Luxury*). Themes persist immediately to MongoDB Atlas and across browser reloads.
+* **🖥️ Theme-Adaptive & Resizable Sidebar**: Fully adaptive sidebar with dedicated light and dark palettes, sprint progress gauge, account tile, storage node indicator, and draggable width resizing.
+* **🔄 Live Database Sync Indicator**: Floating status pill at the bottom of the screen displaying real-time feedback whenever data is actively syncing with MongoDB Atlas.
 
 ---
 
@@ -147,15 +149,18 @@ npm run dev
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/api/health` | Health check, uptime, and database connection state |
-| `GET` | `/api/issues` | Filtered, sorted, and paginated issues list |
-| `POST` | `/api/issues` | Create a new issue (generates sequential key e.g. `DT-1`) |
+| `GET` | `/api/issues` | Filtered, sorted, and paginated issues list (scoped per user or Test Mode) |
+| `POST` | `/api/issues` | Create a new issue (generates sequential key e.g. `DEV-001`) |
 | `GET` | `/api/issues/:id` | Retrieve single issue by ID or key |
 | `PATCH` | `/api/issues/:id` | Update issue attributes or workflow status |
 | `DELETE` | `/api/issues/:id` | Permanently delete an issue |
 | `GET` | `/api/dashboard` | Aggregated sprint KPIs and highest urgency issues |
 | `GET` | `/api/insights` | Pipeline velocity and workload distribution metrics |
 | `GET` | `/api/activity` | Reverse-chronological activity audit stream |
-| `POST` | `/api/auth/login` | User authentication & session generation |
+| `POST` | `/api/auth/register` | Register new user account with clean isolated workspace |
+| `POST` | `/api/auth/login` | User authentication & JWT session generation |
+| `GET` | `/api/auth/me` | Fetch authenticated user profile & active theme |
+| `PATCH` | `/api/auth/theme` | Save theme preference directly to MongoDB Atlas |
 
 ---
 
