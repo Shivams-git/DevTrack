@@ -17,8 +17,13 @@ const app = express();
 app.use(helmet());
 
 // CORS Configuration
+const configuredOrigins = (ENV.CLIENT_URL || '')
+  .split(',')
+  .map((url) => url.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
 const allowedOrigins = [
-  ENV.CLIENT_URL,
+  ...configuredOrigins,
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
@@ -28,10 +33,14 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
-      if (!origin || allowedOrigins.includes(origin) || ENV.NODE_ENV === 'development') {
+      if (!origin || ENV.NODE_ENV === 'development') {
         return callback(null, true);
       }
-      return callback(new Error('CORS policy does not allow access from this origin.'));
+      const cleanOrigin = origin.replace(/\/+$/, '');
+      if (allowedOrigins.includes(cleanOrigin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS policy: origin ${origin} is not allowed.`));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
