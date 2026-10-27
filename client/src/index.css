@@ -3,23 +3,23 @@
 @tailwind utilities;
 
 :root {
-  --theme-bg: #f4f6fa;
+  --theme-bg: #faf5ff;
   --theme-surface: #ffffff;
-  --theme-surface-alt: #f8fafc;
-  --theme-surface-hover: #f1f5f9;
-  --theme-sidebar: #0f172a;
-  --theme-sidebar-border: #1e293b;
+  --theme-surface-alt: #f5f3ff;
+  --theme-surface-hover: #ede9fe;
+  --theme-sidebar: #1b0e33;
+  --theme-sidebar-border: #361b62;
   --theme-header: rgba(255, 255, 255, 0.92);
-  --theme-border: #e2e8f0;
-  --theme-border-strong: #cbd5e1;
-  --theme-primary: #2563eb;
-  --theme-primary-hover: #1d4ed8;
+  --theme-border: #e9d5ff;
+  --theme-border-strong: #d8b4fe;
+  --theme-primary: #9333ea;
+  --theme-primary-hover: #7e22ce;
   --theme-primary-text: #ffffff;
-  --theme-primary-glow: 0 4px 14px rgba(37, 99, 235, 0.3);
-  --theme-primary-subtle: rgba(37, 99, 235, 0.1);
-  --theme-accent: #06b6d4;
-  --theme-text: #0f172a;
-  --theme-text-muted: #64748b;
+  --theme-primary-glow: 0 4px 14px rgba(147, 51, 234, 0.35);
+  --theme-primary-subtle: rgba(147, 51, 234, 0.12);
+  --theme-accent: #ec4899;
+  --theme-text: #270d47;
+  --theme-text-muted: #7e52a0;
 }
 
 @layer base {

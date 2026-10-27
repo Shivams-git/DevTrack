@@ -189,10 +189,10 @@ const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
   const [currentThemeId, setCurrentThemeId] = useState(() => {
-    return localStorage.getItem('devtrack_theme') || 'studio';
+    return localStorage.getItem('devtrack_theme') || 'tokyo';
   });
 
-  const activeTheme = THEMES.find((t) => t.id === currentThemeId) || THEMES[4];
+  const activeTheme = THEMES.find((t) => t.id === currentThemeId) || THEMES.find((t) => t.id === 'tokyo') || THEMES[6];
 
   useEffect(() => {
     localStorage.setItem('devtrack_theme', activeTheme.id);
