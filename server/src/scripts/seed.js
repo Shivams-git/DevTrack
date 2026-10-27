@@ -14,9 +14,9 @@ export async function runSeed({ quiet = false } = {}) {
   const dbOk = await connectDB();
 
   if (dbOk && isDbConnected()) {
-    // MongoDB mode
-    await Issue.deleteMany({});
-    await Activity.deleteMany({});
+    // MongoDB mode: clean only demo records to preserve real user workspaces
+    await Issue.deleteMany({ $or: [{ isDemo: true }, { userId: null }] });
+    await Activity.deleteMany({ $or: [{ isDemo: true }, { userId: null }] });
 
     // Seed or preserve users
     const existingUsers = await User.countDocuments();
@@ -54,7 +54,11 @@ export async function runSeed({ quiet = false } = {}) {
     }
 
     for (const item of sampleIssues) {
-      await Issue.create({ ...item, isDemo: true, userId: null });
+      await Issue.findOneAndUpdate(
+        { key: item.key },
+        { $set: { ...item, isDemo: true, userId: null } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
     }
 
     // Seed realistic activity records

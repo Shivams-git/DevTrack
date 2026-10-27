@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../services/api.js';
 import { useIssues } from '../context/IssueContext.jsx';
 import { formatDate, formatRelativeTime } from '../utils/formatters.js';
+import { getDemoActivities } from '../data/demoIssues.js';
 import {
   History,
   CheckCircle2,
@@ -17,18 +18,24 @@ import {
 
 export function ActivityPage() {
   const { openDetailModal, issues, testMode } = useIssues();
-  const [activities, setActivities] = useState([]);
+  const [activities, setActivities] = useState(() => (testMode ? getDemoActivities() : []));
   const [loading, setLoading] = useState(true);
 
   const fetchActivities = async () => {
     try {
       setLoading(true);
       const res = await api.getActivity(50);
-      if (res.success) {
+      if (res.success && res.data && res.data.length > 0) {
         setActivities(res.data);
+      } else if (testMode) {
+        setActivities(getDemoActivities());
+      } else {
+        setActivities([]);
       }
     } catch (err) {
-      console.error('Failed to load activities:', err);
+      if (testMode) {
+        setActivities(getDemoActivities());
+      }
     } finally {
       setLoading(false);
     }

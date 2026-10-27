@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { STATUSES, PRIORITIES, TYPES } from '../utils/constants.js';
+import { sampleIssues } from '../scripts/seedData.js';
 
 class MemoryStore {
   constructor() {
@@ -8,6 +9,7 @@ class MemoryStore {
     this.users = [];
     this.counter = 1;
     this.seedDemoUsers();
+    this.seedDemoIssues();
   }
 
   seedDemoUsers() {
@@ -85,13 +87,47 @@ class MemoryStore {
     return candidate;
   }
 
+  seedDemoIssues() {
+    for (const item of sampleIssues) {
+      if (!this.issues.some((i) => i.key === item.key)) {
+        this.issues.push({
+          _id: 'demo_' + item.key.toLowerCase(),
+          ...item,
+          isDemo: true,
+          userId: null,
+          createdAt: item.createdAt || new Date(),
+          updatedAt: item.updatedAt || new Date(),
+        });
+      }
+    }
+    if (this.activities.filter((a) => a.isDemo === true).length === 0) {
+      const recentSample = sampleIssues.slice(0, 5);
+      for (const item of recentSample) {
+        this.activities.push({
+          _id: 'act_' + Math.random().toString(36).substring(2, 9),
+          action: 'ISSUE_CREATED',
+          description: `Created issue ${item.key}: "${item.title}" [${item.priority}]`,
+          issueKey: item.key,
+          metadata: { status: item.status, priority: item.priority },
+          createdAt: item.createdAt || new Date(),
+          isDemo: true,
+          userId: null,
+        });
+      }
+    }
+  }
+
   reset() {
     this.issues = [];
     this.activities = [];
     this.counter = 1;
+    this.seedDemoIssues();
   }
 
   findIssues({ search, status, priority, type, sort = 'updatedAt', order = 'desc', page = 1, limit = 50 } = {}, user = null, isTestMode = false) {
+    if (isTestMode && this.issues.filter((i) => i.isDemo === true).length === 0) {
+      this.seedDemoIssues();
+    }
     let result = [...this.issues];
 
     // Filter by testMode or user

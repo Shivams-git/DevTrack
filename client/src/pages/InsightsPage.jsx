@@ -110,15 +110,24 @@ export function InsightsPage() {
 
   const statusData = insights?.byStatus
     ? Object.entries(insights.byStatus).map(([name, count]) => ({ name, count }))
-    : [];
+    : ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done'].map((name) => ({
+        name,
+        count: issues.filter((i) => i.status === name).length,
+      }));
 
   const priorityData = insights?.byPriority
     ? Object.entries(insights.byPriority).map(([name, count]) => ({ name, count }))
-    : [];
+    : ['Low', 'Medium', 'High', 'Critical'].map((name) => ({
+        name,
+        count: issues.filter((i) => i.priority === name).length,
+      }));
 
   const typeData = insights?.byType
     ? Object.entries(insights.byType).map(([name, count]) => ({ name, count }))
-    : [];
+    : ['Task', 'Bug', 'Feature', 'Improvement'].map((name) => ({
+        name,
+        count: issues.filter((i) => i.type === name).length,
+      }));
 
   return (
     <div className="space-y-6">

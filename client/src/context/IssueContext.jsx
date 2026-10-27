@@ -1,22 +1,29 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api.js';
 import { useAuth } from './AuthContext.jsx';
+import { getDemoIssues } from '../data/demoIssues.js';
 
 const IssueContext = createContext();
 
 export function IssueProvider({ children }) {
   const { user } = useAuth();
-  const [issues, setIssues] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [health, setHealth] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [refreshIndex, setRefreshIndex] = useState(0);
 
   // Test Mode toggle state
   const [testMode, setTestMode] = useState(() => {
     return localStorage.getItem('devtrack_test_mode') === 'true';
   });
+
+  // Seed issues immediately if testMode is active
+  const [issues, setIssues] = useState(() => {
+    const isTest = localStorage.getItem('devtrack_test_mode') === 'true';
+    return isTest ? getDemoIssues() : [];
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [health, setHealth] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   // Modals & Dialogs
   const [activeModal, setActiveModal] = useState({ type: null, issue: null });
@@ -55,16 +62,27 @@ export function IssueProvider({ children }) {
 
   // Fetch issues
   const refreshIssues = useCallback(async () => {
+    const isTest = localStorage.getItem('devtrack_test_mode') === 'true';
     try {
       setLoading(true);
       setError(null);
       const res = await api.getIssues({ limit: 100 });
       if (res.success) {
-        setIssues(res.data);
+        if (isTest && (!res.data || res.data.length === 0)) {
+          setIssues(getDemoIssues());
+        } else {
+          setIssues(res.data);
+        }
       }
     } catch (err) {
-      setError(err.message);
-      addToast(err.message, 'error');
+      if (isTest) {
+        // If server is cold-starting on Render or unreachable, ensure demo issues are never empty
+        setIssues((prev) => (prev.length > 0 ? prev : getDemoIssues()));
+        addToast('Server is connecting. Displaying instant demo dataset.', 'info');
+      } else {
+        setError(err.message);
+        addToast(err.message, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -75,9 +93,11 @@ export function IssueProvider({ children }) {
       const next = typeof forcedVal === 'boolean' ? forcedVal : !prev;
       localStorage.setItem('devtrack_test_mode', String(next));
       if (next) {
-        addToast('Test Mode enabled: displaying sample demo issues.', 'info');
+        setIssues(getDemoIssues());
+        addToast('Test Mode enabled: populated sample demo issues.', 'info');
       } else {
-        addToast('Test Mode disabled: displaying your personal issues.', 'info');
+        setIssues([]);
+        addToast('Test Mode disabled: displaying your personal workspace.', 'info');
       }
       return next;
     });
@@ -102,6 +122,23 @@ export function IssueProvider({ children }) {
         return res.data;
       }
     } catch (err) {
+      if (testMode) {
+        const nextNum = issues.length + 1;
+        const newKey = `DEV-${String(nextNum).padStart(3, '0')}`;
+        const fallbackCreated = {
+          _id: 'demo_' + Date.now(),
+          key: newKey,
+          ...issueData,
+          urgencyScore: 25,
+          isDemo: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        setIssues((prev) => [fallbackCreated, ...prev]);
+        addToast(`Issue ${newKey} created in Test Mode!`, 'success');
+        closeModal();
+        return fallbackCreated;
+      }
       addToast(err.message || 'Failed to create issue', 'error');
       throw err;
     }
@@ -119,6 +156,18 @@ export function IssueProvider({ children }) {
         return res.data;
       }
     } catch (err) {
+      if (testMode) {
+        setIssues((prev) =>
+          prev.map((i) =>
+            i.key === idOrKey || i._id === idOrKey ? { ...i, ...updates } : i
+          )
+        );
+        addToast(`Issue updated in Test Mode`, 'success');
+        if (activeModal.type === 'edit') {
+          closeModal();
+        }
+        return;
+      }
       addToast(err.message || 'Failed to update issue', 'error');
       throw err;
     }
@@ -138,9 +187,12 @@ export function IssueProvider({ children }) {
       const res = await api.updateIssue(idOrKey, { status: newStatus });
       if (res.success) {
         addToast(`Moved ${res.data.key} to ${newStatus}`, 'success');
-        triggerRefresh();
       }
     } catch (err) {
+      if (testMode) {
+        addToast(`Moved card to ${newStatus} (Test Mode)`, 'success');
+        return;
+      }
       addToast(err.message || 'Failed to change status', 'error');
       refreshIssues(); // Rollback on failure
     }
@@ -155,6 +207,12 @@ export function IssueProvider({ children }) {
         closeModal();
       }
     } catch (err) {
+      if (testMode) {
+        setIssues((prev) => prev.filter((i) => i.key !== idOrKey && i._id !== idOrKey));
+        addToast(`Issue deleted (Test Mode)`, 'info');
+        closeModal();
+        return;
+      }
       addToast(err.message || 'Failed to delete issue', 'error');
       throw err;
     }

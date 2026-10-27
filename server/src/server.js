@@ -14,22 +14,20 @@ async function startServer() {
     try {
       const { Issue } = await import('./models/Issue.js');
       const { Activity } = await import('./models/Activity.js');
+      const { ensureDemoIssuesExist } = await import('./services/issueService.js');
+
       // Mark any legacy unassigned issues as demo issues
       await Issue.updateMany(
-        { isDemo: { $exists: false }, userId: { $exists: false } },
+        { $or: [{ userId: null }, { userId: { $exists: false } }] },
         { $set: { isDemo: true } }
       );
       await Activity.updateMany(
-        { isDemo: { $exists: false }, userId: { $exists: false } },
+        { $or: [{ userId: null }, { userId: { $exists: false } }] },
         { $set: { isDemo: true } }
       );
 
       // Ensure sample issues exist for Test Mode
-      const demoCount = await Issue.countDocuments({ isDemo: true });
-      if (demoCount === 0) {
-        logger.info('Populating sample dataset for Test Mode...');
-        await runSeed({ quiet: true });
-      }
+      await ensureDemoIssuesExist();
     } catch (migErr) {
       logger.warn('Initial dataset check notice:', migErr.message);
     }

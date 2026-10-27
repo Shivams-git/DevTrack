@@ -9,10 +9,6 @@ import { TYPES, STATUSES, PRIORITIES } from '../utils/constants.js';
 describe('User Isolation and Test Mode Scoping', () => {
   beforeEach(() => {
     memoryStore.reset();
-    // Seed demo issues with isDemo: true
-    for (const sample of sampleIssues.slice(0, 3)) {
-      memoryStore.createIssue({ ...sample, isDemo: true, userId: null });
-    }
   });
 
   test('Guest account in normal mode receives empty issue list', async () => {
@@ -38,7 +34,7 @@ describe('User Isolation and Test Mode Scoping', () => {
 
     assert.equal(res.status, 200);
     assert.equal(res.body.success, true);
-    assert.equal(res.body.data.length, 3);
+    assert.equal(res.body.data.length, sampleIssues.length);
     assert.equal(res.body.isTestMode, true);
   });
 

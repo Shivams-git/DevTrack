@@ -130,19 +130,43 @@ export function DashboardPage() {
         : 0,
   };
 
-  // Prepare chart data
+  // Prepare chart data (fallback to computing from issues when offline or loading)
   const statusChartData = dashboardData?.statusCounts
     ? Object.entries(dashboardData.statusCounts)
         .filter(([_, count]) => count > 0)
         .map(([name, value]) => ({ name, value }))
-    : [];
+    : ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done']
+        .map((name) => ({
+          name,
+          value: issues.filter((i) => i.status === name).length,
+        }))
+        .filter((d) => d.value > 0);
 
   const priorityChartData = dashboardData?.priorityCounts
     ? Object.entries(dashboardData.priorityCounts).map(([name, count]) => ({
         name,
         count,
       }))
-    : [];
+    : ['Low', 'Medium', 'High', 'Critical'].map((name) => ({
+        name,
+        count: issues.filter((i) => i.priority === name).length,
+      }));
+
+  const urgentTasks =
+    dashboardData?.urgentTasks?.length > 0
+      ? dashboardData.urgentTasks
+      : issues
+          .filter((i) => i.status !== 'Done' && (i.urgencyScore >= 30 || i.isBlocked || i.isOverdue))
+          .sort((a, b) => (b.urgencyScore || 0) - (a.urgencyScore || 0))
+          .slice(0, 5);
+
+  const upcomingDeadlines =
+    dashboardData?.upcomingDeadlines?.length > 0
+      ? dashboardData.upcomingDeadlines
+      : issues
+          .filter((i) => i.status !== 'Done' && i.dueDate && !i.isOverdue)
+          .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+          .slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -401,8 +425,8 @@ export function DashboardPage() {
           </div>
 
           <div className="space-y-2.5">
-            {dashboardData?.urgentTasks && dashboardData.urgentTasks.length > 0 ? (
-              dashboardData.urgentTasks.map((task) => (
+            {urgentTasks && urgentTasks.length > 0 ? (
+              urgentTasks.map((task) => (
                 <div
                   key={task.key}
                   onClick={() => openDetailModal(task)}
@@ -456,8 +480,8 @@ export function DashboardPage() {
             </div>
 
             <div className="space-y-2.5">
-              {dashboardData?.upcomingDeadlines && dashboardData.upcomingDeadlines.length > 0 ? (
-                dashboardData.upcomingDeadlines.map((task) => (
+              {upcomingDeadlines && upcomingDeadlines.length > 0 ? (
+                upcomingDeadlines.map((task) => (
                   <div
                     key={task.key}
                     onClick={() => openDetailModal(task)}

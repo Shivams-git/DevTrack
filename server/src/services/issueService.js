@@ -1,10 +1,56 @@
 import mongoose from 'mongoose';
 import { Issue } from '../models/Issue.js';
+import { Activity } from '../models/Activity.js';
 import { isDbConnected } from '../config/db.js';
 import { memoryStore } from './memoryStore.js';
 import { enrichIssue, isIssueOverdue, isUpcomingDeadline } from './prioritizationEngine.js';
 import { logActivity } from './activityService.js';
 import { STATUSES, PRIORITIES, ACTIVITY_ACTIONS } from '../utils/constants.js';
+import { sampleIssues } from '../scripts/seedData.js';
+
+export async function ensureDemoIssuesExist() {
+  if (isDbConnected()) {
+    const demoCount = await Issue.countDocuments({ isDemo: true });
+    if (demoCount === 0) {
+      // Mark any legacy unassigned issues as demo
+      await Issue.updateMany(
+        { $or: [{ userId: null }, { userId: { $exists: false } }] },
+        { $set: { isDemo: true } }
+      );
+      await Activity.updateMany(
+        { $or: [{ userId: null }, { userId: { $exists: false } }] },
+        { $set: { isDemo: true } }
+      );
+
+      const refreshedCount = await Issue.countDocuments({ isDemo: true });
+      if (refreshedCount === 0) {
+        for (const item of sampleIssues) {
+          await Issue.findOneAndUpdate(
+            { key: item.key },
+            { $set: { ...item, isDemo: true, userId: null } },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          );
+        }
+        const recentSample = sampleIssues.slice(0, 5);
+        for (const item of recentSample) {
+          await Activity.create({
+            action: ACTIVITY_ACTIONS.ISSUE_CREATED,
+            description: `Created issue ${item.key}: "${item.title}" [${item.priority}]`,
+            issueKey: item.key,
+            metadata: { status: item.status, priority: item.priority },
+            createdAt: item.createdAt,
+            isDemo: true,
+            userId: null,
+          });
+        }
+      }
+    }
+  } else {
+    if (memoryStore.issues.filter((i) => i.isDemo === true).length === 0) {
+      memoryStore.seedDemoIssues();
+    }
+  }
+}
 
 /**
  * Generate next sequential issue key (e.g., DEV-015)
@@ -64,6 +110,10 @@ export function buildUserQuery(user = null, isTestMode = false) {
 
 export async function getAllIssues(params = {}, user = null, isTestMode = false) {
   const { search, status, priority, type, sort = 'updatedAt', order = 'desc', page = 1, limit = 50 } = params;
+
+  if (isTestMode) {
+    await ensureDemoIssuesExist();
+  }
 
   if (!isDbConnected()) {
     const res = memoryStore.findIssues(params, user, isTestMode);
@@ -285,6 +335,9 @@ export async function deleteIssue(idOrKey, user = null, isTestMode = false) {
 }
 
 export async function getDashboardData(user = null, isTestMode = false) {
+  if (isTestMode) {
+    await ensureDemoIssuesExist();
+  }
   const userQuery = buildUserQuery(user, isTestMode);
   let allIssues = [];
   if (isDbConnected()) {
@@ -352,6 +405,9 @@ export async function getDashboardData(user = null, isTestMode = false) {
 }
 
 export async function getInsightsData(user = null, isTestMode = false) {
+  if (isTestMode) {
+    await ensureDemoIssuesExist();
+  }
   const userQuery = buildUserQuery(user, isTestMode);
   let allIssues = [];
   if (isDbConnected()) {
