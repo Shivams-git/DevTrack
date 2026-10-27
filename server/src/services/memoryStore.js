@@ -1,10 +1,65 @@
+import bcrypt from 'bcryptjs';
 import { STATUSES, PRIORITIES, TYPES } from '../utils/constants.js';
 
 class MemoryStore {
   constructor() {
     this.issues = [];
     this.activities = [];
+    this.users = [];
     this.counter = 1;
+    this.seedDemoUsers();
+  }
+
+  seedDemoUsers() {
+    // Valid bcrypt hash for 'password123'
+    const defaultHash = bcrypt.hashSync('password123', 10);
+    this.users = [
+      {
+        _id: 'user_alex_1',
+        name: 'Alex Rivera',
+        email: 'alex@devtrack.dev',
+        password: defaultHash,
+        role: 'tech_lead',
+        team: 'Platform Architecture',
+        bio: 'Tech Lead focusing on developer productivity and cloud infrastructure.',
+        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=alex@devtrack.dev',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        _id: 'user_sarah_2',
+        name: 'Sarah Chen',
+        email: 'sarah@devtrack.dev',
+        password: defaultHash,
+        role: 'developer',
+        team: 'Frontend Systems',
+        bio: 'Senior full-stack engineer building intuitive UI/UX systems.',
+        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=sarah@devtrack.dev',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+  }
+
+  findUserByEmail(email) {
+    if (!email) return null;
+    return this.users.find((u) => u.email.toLowerCase() === email.toLowerCase()) || null;
+  }
+
+  findUserById(id) {
+    if (!id) return null;
+    return this.users.find((u) => u._id === id || u.id === id) || null;
+  }
+
+  createUser(userData) {
+    const user = {
+      _id: 'user_' + Math.random().toString(36).substring(2, 9),
+      ...userData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.push(user);
+    return user;
   }
 
   generateKey() {

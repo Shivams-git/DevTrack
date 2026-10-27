@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
   KanbanSquare,
@@ -9,9 +9,11 @@ import {
   Database,
   Layers,
   PanelLeftClose,
-  GripVertical,
+  User,
+  LogIn,
 } from 'lucide-react';
 import { useIssues } from '../../context/IssueContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 const navItems = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -30,6 +32,7 @@ export function Sidebar({
   onWidthChange,
 }) {
   const { health, issues } = useIssues();
+  const { user, isAuthenticated } = useAuth();
   const dbStatus = health?.database?.status || 'checking';
   const isAtlas = dbStatus === 'connected';
 
@@ -81,7 +84,7 @@ export function Sidebar({
       {/* Sidebar element with dynamic width, scrollable content, and resize handle */}
       <aside
         style={{ width: `${width}px` }}
-        className={`fixed top-0 bottom-0 left-0 z-40 bg-[#0f172a] text-slate-300 border-r border-slate-800 flex flex-col transition-transform duration-200 ease-in-out select-none ${
+        className={`fixed top-0 bottom-0 left-0 z-40 theme-sidebar text-slate-300 border-r theme-border flex flex-col transition-transform duration-200 ease-in-out select-none ${
           isOpen
             ? 'translate-x-0'
             : isVisible
@@ -90,15 +93,15 @@ export function Sidebar({
         }`}
       >
         {/* Brand Header with Collapse Button */}
-        <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/80 flex-shrink-0">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 flex-shrink-0">
+        <div className="h-16 px-4 flex items-center justify-between border-b theme-border flex-shrink-0">
+          <Link to="/" className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl theme-btn-primary flex items-center justify-center text-white shadow-md flex-shrink-0">
               <Layers className="w-4 h-4" />
             </div>
             <div className="min-w-0 truncate">
               <div className="font-bold text-white text-sm tracking-tight flex items-center gap-1.5">
                 <span>DevTrack</span>
-                <span className="text-[9px] uppercase font-bold tracking-wider px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                <span className="text-[9px] uppercase font-bold tracking-wider px-1 py-0.2 rounded theme-subtle-badge">
                   PRO
                 </span>
               </div>
@@ -106,12 +109,12 @@ export function Sidebar({
                 Plan better. Ship faster.
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop hide/collapse toggle button */}
           <button
             onClick={onToggleVisibility}
-            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
             title="Hide Sidebar"
           >
             <PanelLeftClose className="w-4 h-4" />
@@ -135,15 +138,15 @@ export function Sidebar({
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                         isActive
-                          ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-                          : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'
+                          ? 'theme-active-nav font-bold'
+                          : 'text-slate-400 hover:text-slate-100 hover:bg-white/5'
                       }`
                     }
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
                     <span className="flex-1 truncate">{item.name}</span>
                     {item.name === 'All Issues' && issues?.length > 0 && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/20 text-slate-300 font-mono">
                         {issues.length}
                       </span>
                     )}
@@ -154,7 +157,7 @@ export function Sidebar({
           </div>
 
           {/* Quick summary stats in sidebar */}
-          <div className="p-3 bg-slate-800/40 rounded-xl border border-slate-800">
+          <div className="p-3 bg-black/20 rounded-xl border theme-border">
             <div className="flex justify-between items-center text-[11px] text-slate-400 mb-1.5">
               <span>Sprint Progress</span>
               <span className="font-mono text-slate-200">
@@ -165,9 +168,9 @@ export function Sidebar({
                   : '0%'}
               </span>
             </div>
-            <div className="w-full bg-slate-700/60 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
               <div
-                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                className="theme-btn-primary h-full rounded-full transition-all duration-500"
                 style={{
                   width: `${
                     issues.length > 0
@@ -180,10 +183,40 @@ export function Sidebar({
               />
             </div>
           </div>
+
+          {/* User Account Tile */}
+          <div className="p-2.5 rounded-xl border theme-border bg-black/20 flex items-center justify-between">
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-2 min-w-0">
+                <img
+                  src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`}
+                  alt={user.name}
+                  className="w-7 h-7 rounded-lg bg-white/10 flex-shrink-0"
+                />
+                <div className="min-w-0 truncate">
+                  <div className="text-xs font-semibold text-white truncate">{user.name}</div>
+                  <div className="text-[10px] text-slate-400 capitalize truncate">{user.role}</div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="w-full flex items-center justify-between text-xs text-slate-400 hover:text-white transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-slate-500" />
+                  <span>Guest Mode</span>
+                </div>
+                <span className="text-[10px] font-bold theme-accent-text flex items-center gap-1">
+                  <LogIn className="w-3 h-3" /> Sign In
+                </span>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Database Status Indicator (Pinned at bottom) */}
-        <div className="p-3 border-t border-slate-800 text-xs flex-shrink-0">
+        <div className="p-3 border-t theme-border text-xs flex-shrink-0 bg-black/10">
           <div className="flex items-center justify-between text-slate-400 mb-1.5 text-[10px] font-medium">
             <div className="flex items-center gap-1.5">
               <Database className="w-3 h-3" />

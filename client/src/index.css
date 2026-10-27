@@ -3,24 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --bg-main: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-surface-hover: #f1f5f9;
-  --bg-sidebar: #0f172a;
-  --border-subtle: #e2e8f0;
-  --border-muted: #cbd5e1;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --accent-color: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-subtle: rgba(79, 70, 229, 0.1);
+  --theme-bg: #f4f6fa;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #f8fafc;
+  --theme-surface-hover: #f1f5f9;
+  --theme-sidebar: #0f172a;
+  --theme-sidebar-border: #1e293b;
+  --theme-header: rgba(255, 255, 255, 0.92);
+  --theme-border: #e2e8f0;
+  --theme-border-strong: #cbd5e1;
+  --theme-primary: #2563eb;
+  --theme-primary-hover: #1d4ed8;
+  --theme-primary-text: #ffffff;
+  --theme-primary-glow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  --theme-primary-subtle: rgba(37, 99, 235, 0.1);
+  --theme-accent: #06b6d4;
+  --theme-text: #0f172a;
+  --theme-text-muted: #64748b;
 }
 
 @layer base {
   body {
     @apply font-sans;
-    background-color: var(--bg-main);
-    color: var(--text-main);
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
@@ -36,20 +42,66 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--theme-border-strong, #cbd5e1);
   border-radius: 9999px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--theme-primary, #64748b);
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+/* Theme Utilities for wide component styling */
+.theme-btn-primary {
+  background-color: var(--theme-primary) !important;
+  color: var(--theme-primary-text) !important;
+  box-shadow: var(--theme-primary-glow) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-btn-primary:hover {
+  background-color: var(--theme-primary-hover) !important;
+  transform: translateY(-1px);
+}
+
+.theme-sidebar {
+  background-color: var(--theme-sidebar) !important;
+  border-color: var(--theme-sidebar-border) !important;
+}
+
+.theme-card {
+  background-color: var(--theme-surface) !important;
+  border-color: var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+.theme-surface-alt {
+  background-color: var(--theme-surface-alt) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.theme-header {
+  background-color: var(--theme-header) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.theme-accent-text {
+  color: var(--theme-primary) !important;
+}
+
+.theme-border {
+  border-color: var(--theme-border) !important;
+}
+
+.theme-active-nav {
+  background-color: var(--theme-primary) !important;
+  color: var(--theme-primary-text) !important;
+  box-shadow: var(--theme-primary-glow) !important;
+}
+
+.theme-subtle-badge {
+  background-color: var(--theme-primary-subtle) !important;
+  color: var(--theme-primary) !important;
+  border-color: var(--theme-primary) !important;
 }
 
 /* Glass effect utilities */

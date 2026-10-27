@@ -140,15 +140,15 @@ export function IssueFormModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-2xl shadow-2xl max-w-xl w-full border border-slate-200 dark:border-slate-800 overflow-hidden my-8 animate-scale-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="theme-card text-[var(--theme-text)] rounded-2xl shadow-2xl max-w-xl w-full border theme-border overflow-hidden my-8 animate-scale-in">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/50">
+        <div className="px-6 py-4 border-b theme-border flex items-center justify-between theme-surface-alt">
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            <h2 className="text-base font-bold text-[var(--theme-text)]">
               {isEdit ? `Edit Issue: ${issue?.key}` : 'Create New Issue'}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-[var(--theme-text-muted)] mt-0.5">
               {isEdit
                 ? 'Update fields, customize identifier, or reclassify status.'
                 : 'Define an issue code or leave blank to auto-generate sequentially.'}
@@ -378,7 +378,7 @@ export function IssueFormModal() {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm shadow-indigo-600/20 disabled:opacity-50 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold theme-btn-primary rounded-lg disabled:opacity-50 transition-all cursor-pointer"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create Issue'}

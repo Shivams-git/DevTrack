@@ -96,23 +96,23 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Top Banner / Hero */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 rounded-2xl shadow-md border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl shadow-xl border theme-border theme-card">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-2">
-            <Flame className="w-3.5 h-3.5 text-indigo-400" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold theme-subtle-badge mb-2">
+            <Flame className="w-3.5 h-3.5" />
             Developer Sprint Overview
           </div>
-          <h2 className="text-2xl font-extrabold tracking-tight">
+          <h2 className="text-2xl font-extrabold tracking-tight text-[var(--theme-text)]">
             Sprint Status & Velocity
           </h2>
-          <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-xl">
+          <p className="text-[var(--theme-text-muted)] text-xs sm:text-sm mt-1 max-w-xl">
             Real-time developer workflow tracking with automated priority scoring and overdue detection.
           </p>
         </div>
 
         <button
           onClick={openCreateModal}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 active:scale-95 transition-all self-start sm:self-auto"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold theme-btn-primary active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Create Issue</span>
@@ -122,64 +122,64 @@ export function DashboardPage() {
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Issues */}
-        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+        <div className="p-4 rounded-xl theme-card border theme-border shadow-subtle flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[var(--theme-text-muted)] mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Issues</span>
             <Layers className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{metrics.total}</div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Across all workflow states</div>
+          <div className="text-2xl font-black text-[var(--theme-text)] font-mono">{metrics.total}</div>
+          <div className="text-[11px] text-[var(--theme-text-muted)] mt-1">Across all workflow states</div>
         </div>
 
         {/* In Progress */}
-        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
-          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 mb-2">
+        <div className="p-4 rounded-xl theme-card border theme-border shadow-subtle flex flex-col justify-between">
+          <div className="flex items-center justify-between text-amber-500 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">In Progress</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">{metrics.inProgress}</div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Actively being worked on</div>
+          <div className="text-2xl font-black text-amber-500 font-mono">{metrics.inProgress}</div>
+          <div className="text-[11px] text-[var(--theme-text-muted)] mt-1">Actively being worked on</div>
         </div>
 
         {/* Completed */}
-        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
-          <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 mb-2">
+        <div className="p-4 rounded-xl theme-card border theme-border shadow-subtle flex flex-col justify-between">
+          <div className="flex items-center justify-between text-emerald-500 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Completed</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{metrics.completed}</div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+          <div className="text-2xl font-black text-emerald-500 font-mono">{metrics.completed}</div>
+          <div className="text-[11px] text-[var(--theme-text-muted)] mt-1">
             {metrics.completionPercentage}% completion rate
           </div>
         </div>
 
         {/* Overdue */}
-        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
-          <div className="flex items-center justify-between text-rose-600 dark:text-rose-400 mb-2">
+        <div className="p-4 rounded-xl theme-card border theme-border shadow-subtle flex flex-col justify-between">
+          <div className="flex items-center justify-between text-rose-500 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Overdue</span>
             <AlertTriangle className="w-4 h-4 text-rose-500" />
           </div>
-          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono">{metrics.overdue}</div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Requires immediate attention</div>
+          <div className="text-2xl font-black text-rose-500 font-mono">{metrics.overdue}</div>
+          <div className="text-[11px] text-[var(--theme-text-muted)] mt-1">Requires immediate attention</div>
         </div>
 
         {/* Blocked */}
-        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between col-span-2 lg:col-span-1">
-          <div className="flex items-center justify-between text-indigo-600 dark:text-indigo-400 mb-2">
+        <div className="p-4 rounded-xl theme-card border theme-border shadow-subtle flex flex-col justify-between col-span-2 lg:col-span-1">
+          <div className="flex items-center justify-between theme-accent-text mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Blocked</span>
-            <ShieldAlert className="w-4 h-4 text-indigo-500" />
+            <ShieldAlert className="w-4 h-4" />
           </div>
-          <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono">{metrics.blocked}</div>
-          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">External blockers flagged</div>
+          <div className="text-2xl font-black theme-accent-text font-mono">{metrics.blocked}</div>
+          <div className="text-[11px] text-[var(--theme-text-muted)] mt-1">External blockers flagged</div>
         </div>
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Status Distribution Pie Chart */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Issue Distribution by Status</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Current distribution across Kanban pipeline</p>
+        <div className="p-5 rounded-2xl theme-card border theme-border shadow-subtle">
+          <h3 className="text-sm font-bold text-[var(--theme-text)] mb-1">Issue Distribution by Status</h3>
+          <p className="text-xs text-[var(--theme-text-muted)] mb-4">Current distribution across Kanban pipeline</p>
 
           {statusChartData.length > 0 ? (
             <div className="h-60 w-full flex items-center justify-center">
@@ -233,9 +233,9 @@ export function DashboardPage() {
         </div>
 
         {/* Priority Distribution Bar Chart */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Issues by Priority</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Workload breakdown by severity level</p>
+        <div className="p-5 rounded-2xl theme-card border theme-border shadow-subtle">
+          <h3 className="text-sm font-bold text-[var(--theme-text)] mb-1">Issues by Priority</h3>
+          <p className="text-xs text-[var(--theme-text-muted)] mb-4">Workload breakdown by severity level</p>
 
           {priorityChartData.length > 0 ? (
             <div className="h-60 w-full">
@@ -273,13 +273,13 @@ export function DashboardPage() {
       {/* Two Column Section: Urgent/Overdue Tasks & Upcoming Deadlines */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Urgent or Overdue Work */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle">
+        <div className="p-5 rounded-2xl theme-card border theme-border shadow-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-rose-600" />
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Highest Urgency Tasks</h3>
+              <Flame className="w-4 h-4 text-rose-500" />
+              <h3 className="text-sm font-bold text-[var(--theme-text)]">Highest Urgency Tasks</h3>
             </div>
-            <span className="text-[11px] text-slate-400 font-mono">Ranked by score</span>
+            <span className="text-[11px] text-[var(--theme-text-muted)] font-mono">Ranked by score</span>
           </div>
 
           <div className="space-y-2.5">
@@ -288,11 +288,11 @@ export function DashboardPage() {
                 <div
                   key={task.key}
                   onClick={() => openDetailModal(task)}
-                  className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-indigo-50/30 dark:hover:bg-slate-800/40 transition-all cursor-pointer group"
+                  className="flex items-center justify-between p-3 rounded-xl border theme-border hover:theme-subtle-badge transition-all cursor-pointer group"
                 >
                   <div className="flex-1 min-w-0 pr-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      <span className="font-mono text-xs font-bold theme-accent-text">
                         {task.key}
                       </span>
                       <PriorityBadge priority={task.priority} size="xs" />
@@ -307,19 +307,19 @@ export function DashboardPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    <p className="text-xs font-semibold text-[var(--theme-text)] truncate group-hover:theme-accent-text transition-colors">
                       {task.title}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <UrgencyBadge level={task.urgencyLevel} score={task.urgencyScore} />
-                    <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:theme-accent-text transition-colors" />
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-xs text-slate-400">
+              <div className="text-center py-8 text-xs text-[var(--theme-text-muted)]">
                 🎉 No critical or overdue tasks pending!
               </div>
             )}
@@ -327,14 +327,14 @@ export function DashboardPage() {
         </div>
 
         {/* Upcoming Deadlines & Recently Updated */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
+        <div className="p-5 rounded-2xl theme-card border theme-border shadow-subtle flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-amber-500" />
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Upcoming Deadlines</h3>
+                <h3 className="text-sm font-bold text-[var(--theme-text)]">Upcoming Deadlines</h3>
               </div>
-              <span className="text-[11px] text-slate-400">Next 7 days</span>
+              <span className="text-[11px] text-[var(--theme-text-muted)]">Next 7 days</span>
             </div>
 
             <div className="space-y-2.5">

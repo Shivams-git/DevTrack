@@ -8,6 +8,7 @@ import issueRoutes from './routes/issueRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import insightsRoutes from './routes/insightsRoutes.js';
 import activityRoutes from './routes/activityRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -59,6 +60,7 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/health', healthRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/insights', insightsRoutes);

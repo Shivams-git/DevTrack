@@ -40,14 +40,14 @@ export function IssueCard({ issue, isDragging, onDragStart, onDragEnd }) {
       onDragStart={(e) => onDragStart(e, issue)}
       onDragEnd={onDragEnd}
       onClick={handleCardClick}
-      className={`group relative bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-subtle hover:shadow-hover hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all cursor-grab active:cursor-grabbing select-none ${
-        isDragging ? 'opacity-40 scale-95 border-indigo-400' : ''
+      className={`group relative theme-card p-3.5 rounded-xl border theme-border shadow-subtle hover:shadow-hover hover:border-[var(--theme-primary)] transition-all cursor-grab active:cursor-grabbing select-none ${
+        isDragging ? 'opacity-40 scale-95 border-[var(--theme-primary)]' : ''
       }`}
     >
       {/* Top row: Key, Type, Priority */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5">
-          <span className="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-100 dark:border-indigo-900/60">
+          <span className="font-mono text-xs font-bold theme-subtle-badge px-2 py-0.5 rounded border">
             {issue.key}
           </span>
           <TypeBadge type={issue.type} size="xs" />

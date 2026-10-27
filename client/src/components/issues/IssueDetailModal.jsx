@@ -45,12 +45,12 @@ export function IssueDetailModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 overflow-hidden my-8 animate-scale-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="theme-card text-[var(--theme-text)] rounded-2xl shadow-2xl max-w-2xl w-full border theme-border overflow-hidden my-8 animate-scale-in">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between bg-slate-50/70 dark:bg-slate-800/50">
+        <div className="px-6 py-4 border-b theme-border flex items-start justify-between theme-surface-alt">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-sm font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-md border border-indigo-200 dark:border-indigo-800">
+            <span className="font-mono text-sm font-bold theme-subtle-badge px-2.5 py-1 rounded-md border">
               {issue.key}
             </span>
             <TypeBadge type={issue.type} />

@@ -42,20 +42,20 @@ export function KanbanColumn({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`flex flex-col flex-1 min-w-[280px] max-w-xs sm:max-w-none bg-slate-100/70 dark:bg-slate-900/60 rounded-2xl p-3 border transition-colors ${
+      className={`flex flex-col flex-1 min-w-[280px] max-w-xs sm:max-w-none theme-surface-alt rounded-2xl p-3 border transition-colors ${
         isOver
-          ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-400 border-dashed'
-          : 'border-slate-200/80 dark:border-slate-800'
+          ? 'theme-subtle-badge border-[var(--theme-primary)] border-dashed'
+          : 'theme-border'
       }`}
     >
       {/* Column Header */}
       <div className="flex items-center justify-between pb-3 px-1">
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${style.dot}`} />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--theme-text)]">
             {status}
           </h3>
-          <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold shadow-xs border border-slate-200/60 dark:border-slate-700">
+          <span className="text-xs font-mono px-2 py-0.5 rounded-full theme-card text-[var(--theme-text)] font-semibold shadow-xs border theme-border">
             {issues.length}
           </span>
         </div>
