@@ -34,7 +34,7 @@ export function AppLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] flex flex-col font-sans transition-colors duration-200">
       {/* Sidebar with adjustable width, scroll, and hide/unhide */}
       <Sidebar
         isOpen={mobileSidebarOpen}
