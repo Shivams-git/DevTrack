@@ -243,28 +243,41 @@ export function ThemeProvider({ children }) {
 
   const setTheme = async (themeId) => {
     if (!THEMES.some((t) => t.id === themeId)) return;
+
+    // 1. Instantly update active theme state & local storage
     setCurrentThemeId(themeId);
     localStorage.setItem('devtrack_theme', themeId);
 
-    // If authenticated, persist to MongoDB Atlas / backend database
+    // 2. Synchronously update locally cached user and sessions so reload never loses it
     const token = localStorage.getItem('devtrack_token');
+    const rawUser = localStorage.getItem('devtrack_user');
+    if (rawUser) {
+      try {
+        const userObj = JSON.parse(rawUser);
+        userObj.theme = themeId;
+        localStorage.setItem('devtrack_user', JSON.stringify(userObj));
+      } catch {}
+    }
+    const rawSessions = localStorage.getItem('devtrack_sessions');
+    if (rawSessions) {
+      try {
+        const sessionsObj = JSON.parse(rawSessions);
+        const updatedSessions = sessionsObj.map((s) =>
+          s.token === token || !token ? { ...s, user: { ...s.user, theme: themeId } } : s
+        );
+        localStorage.setItem('devtrack_sessions', JSON.stringify(updatedSessions));
+      } catch {}
+    }
+
+    // 3. Dispatch event immediately so all contexts and UI update synchronously
+    window.dispatchEvent(new CustomEvent('devtrack_theme_change', { detail: themeId }));
+
+    // 4. Immediately persist to database for this user
     if (token) {
       try {
-        await api.updateTheme(themeId);
-        // Sync locally cached user object
-        const rawUser = localStorage.getItem('devtrack_user');
-        if (rawUser) {
-          const userObj = JSON.parse(rawUser);
-          userObj.theme = themeId;
-          localStorage.setItem('devtrack_user', JSON.stringify(userObj));
-        }
-        const rawSessions = localStorage.getItem('devtrack_sessions');
-        if (rawSessions) {
-          const sessionsObj = JSON.parse(rawSessions);
-          const updatedSessions = sessionsObj.map((s) =>
-            s.token === token ? { ...s, user: { ...s.user, theme: themeId } } : s
-          );
-          localStorage.setItem('devtrack_sessions', JSON.stringify(updatedSessions));
+        const res = await api.updateTheme(themeId);
+        if (res?.data) {
+          localStorage.setItem('devtrack_user', JSON.stringify(res.data));
         }
       } catch (err) {
         console.warn('Could not persist theme to server:', err.message);

@@ -99,6 +99,7 @@ export const api = {
   updateTheme: (theme) =>
     request('/api/auth/theme', {
       method: 'PATCH',
+      keepalive: true,
       body: JSON.stringify({ theme }),
     }),
 };

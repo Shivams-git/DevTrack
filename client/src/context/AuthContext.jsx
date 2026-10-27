@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../services/api.js';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '') + '/api';
 
@@ -59,10 +60,23 @@ export function AuthProvider({ children }) {
   });
 
   const applyUserTheme = (userData) => {
-    const themeToApply = (userData && userData.theme) || 'tokyo';
+    const local = localStorage.getItem('devtrack_theme');
+    const themeToApply = userData?.theme || local || 'tokyo';
     localStorage.setItem('devtrack_theme', themeToApply);
     window.dispatchEvent(new CustomEvent('devtrack_theme_change', { detail: themeToApply }));
   };
+
+  // Synchronize AuthContext state with live theme changes
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      const newTheme = e.detail;
+      if (newTheme) {
+        setUser((prev) => (prev ? { ...prev, theme: newTheme } : null));
+      }
+    };
+    window.addEventListener('devtrack_theme_change', handleThemeChange);
+    return () => window.removeEventListener('devtrack_theme_change', handleThemeChange);
+  }, []);
 
   const enterGuestMode = (isTest = false) => {
     try {
@@ -115,9 +129,19 @@ export function AuthProvider({ children }) {
 
         if (ok && json.data) {
           const updatedUser = json.data;
+          const currentLocalTheme = localStorage.getItem('devtrack_theme');
+
+          // If user recently changed theme locally and server does not match it yet,
+          // prioritize user's immediate choice and sync to server right away!
+          if (currentLocalTheme && updatedUser.theme !== currentLocalTheme) {
+            updatedUser.theme = currentLocalTheme;
+            api.updateTheme(currentLocalTheme).catch(() => {});
+          } else if (updatedUser.theme) {
+            applyUserTheme(updatedUser);
+          }
+
           setUser(updatedUser);
           localStorage.setItem('devtrack_user', JSON.stringify(updatedUser));
-          applyUserTheme(updatedUser);
 
           // Update active user in sessions list
           setSessions((prev) => {

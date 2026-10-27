@@ -145,25 +145,24 @@ export const authService = {
     }
   },
 
-  async getCurrentUser(userId) {
+  async getCurrentUser(userId, email = null) {
     if (isMongoConnected()) {
-      const user = await User.findById(userId);
-      if (!user) {
-        const err = new Error('User not found');
-        err.status = 404;
-        throw err;
+      const query = mongoose.Types.ObjectId.isValid(userId)
+        ? { _id: userId }
+        : { $or: [{ email: email || userId }, { name: userId }] };
+      const user = await User.findOne(query);
+      if (user) {
+        return user.toJSON();
       }
-      return user.toJSON();
-    } else {
-      const user = memoryStore.findUserById(userId);
-      if (!user) {
-        const err = new Error('User not found');
-        err.status = 404;
-        throw err;
-      }
-      const { password: _, ...userWithoutPassword } = user;
-      return userWithoutPassword;
     }
+    const user = memoryStore.findUserById(userId) || (email ? memoryStore.findUserByEmail(email) : null);
+    if (!user) {
+      const err = new Error('User not found');
+      err.status = 404;
+      throw err;
+    }
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   },
 
   async listUsers() {
@@ -175,34 +174,39 @@ export const authService = {
     }
   },
 
-  async updateTheme(userId, theme) {
+  async updateTheme(userId, theme, email = null) {
     if (!theme) {
       const err = new Error('Theme is required');
       err.status = 400;
       throw err;
     }
 
+    const cleanTheme = String(theme).trim();
+
     if (isMongoConnected()) {
-      const user = await User.findByIdAndUpdate(
-        userId,
-        { $set: { theme: String(theme).trim() } },
+      const query = mongoose.Types.ObjectId.isValid(userId)
+        ? { _id: userId }
+        : { $or: [{ email: email || userId }, { name: userId }] };
+
+      const user = await User.findOneAndUpdate(
+        query,
+        { $set: { theme: cleanTheme } },
         { new: true }
       );
-      if (!user) {
-        const err = new Error('User not found');
-        err.status = 404;
-        throw err;
+      if (user) {
+        memoryStore.updateUser(user.email, { theme: cleanTheme });
+        return user.toJSON();
       }
-      return user.toJSON();
-    } else {
-      const user = memoryStore.updateUser(userId, { theme: String(theme).trim() });
-      if (!user) {
-        const err = new Error('User not found');
-        err.status = 404;
-        throw err;
-      }
-      const { password: _, ...userWithoutPassword } = user;
-      return userWithoutPassword;
     }
+
+    const user = memoryStore.updateUser(userId, { theme: cleanTheme }) ||
+                 (email ? memoryStore.updateUser(email, { theme: cleanTheme }) : null);
+    if (!user) {
+      const err = new Error('User not found');
+      err.status = 404;
+      throw err;
+    }
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   },
 };

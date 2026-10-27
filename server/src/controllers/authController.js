@@ -30,7 +30,7 @@ export async function login(req, res, next) {
 
 export async function getMe(req, res, next) {
   try {
-    const user = await authService.getCurrentUser(req.user.id);
+    const user = await authService.getCurrentUser(req.user.id, req.user?.email);
     res.status(200).json({
       success: true,
       data: user,
@@ -56,7 +56,7 @@ export async function getUsers(req, res, next) {
 export async function updateTheme(req, res, next) {
   try {
     const { theme } = req.body;
-    const user = await authService.updateTheme(req.user.id, theme);
+    const user = await authService.updateTheme(req.user.id, theme, req.user?.email);
     res.status(200).json({
       success: true,
       message: 'Theme preference saved',
