@@ -46,6 +46,7 @@ export function Navbar({ onMenuClick, isSidebarVisible, onToggleSidebar }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -55,6 +56,21 @@ export function Navbar({ onMenuClick, isSidebarVisible, onToggleSidebar }) {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Global keyboard shortcut to focus search with Ctrl+K or Cmd+K
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      if (event.key === 'Escape' && document.activeElement === searchInputRef.current) {
+        searchInputRef.current?.blur();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleRefresh = async () => {
@@ -89,8 +105,9 @@ export function Navbar({ onMenuClick, isSidebarVisible, onToggleSidebar }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 theme-header backdrop-blur-md border-b theme-border px-4 sm:px-6 flex items-center justify-between gap-3 transition-colors">
-      <div className="flex items-center gap-2.5">
+    <header className="sticky top-0 z-30 h-16 theme-header backdrop-blur-md border-b theme-border px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 transition-colors">
+      {/* Left: Page Title & Sidebar Controls */}
+      <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
         {/* Mobile menu button */}
         <button
           onClick={onMenuClick}
@@ -112,37 +129,48 @@ export function Navbar({ onMenuClick, isSidebarVisible, onToggleSidebar }) {
         )}
 
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-[var(--theme-text)] leading-tight">
+          <h1 className="text-base sm:text-lg font-bold text-[var(--theme-text)] leading-tight whitespace-nowrap">
             {title}
           </h1>
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 flex-1 max-w-xl justify-end">
-        {/* Global Search */}
-        <div className="relative w-full max-w-xs hidden sm:block">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+      {/* Center: Prominent, Expanded Global Search */}
+      <div className="flex-1 max-w-sm sm:max-w-md lg:max-w-xl mx-2 sm:mx-4">
+        <div className="relative w-full group">
+          <Search className="w-4 h-4 text-[var(--theme-text-muted)] group-focus-within:text-[var(--theme-primary)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
           <input
+            ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search issues (DEV-001, bug...)"
-            className="w-full pl-8 pr-3 py-1.5 text-xs theme-surface-alt text-[var(--theme-text)] rounded-lg border theme-border focus:border-indigo-500 focus:outline-none transition-all placeholder:text-slate-400"
+            placeholder="Search issues by key, title, status, or tag... (DEV-001)"
+            className="w-full pl-10 pr-16 py-2 h-9 sm:h-10 text-xs sm:text-sm theme-surface-alt text-[var(--theme-text)] rounded-xl border theme-border hover:border-[var(--theme-border-strong)] focus:border-[var(--theme-primary)] focus:ring-2 focus:ring-[var(--theme-primary)]/20 focus:outline-none transition-all shadow-xs placeholder:text-[var(--theme-text-muted)]/75"
           />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-bold"
-            >
-              ×
-            </button>
-          )}
+          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            {searchQuery ? (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="w-5 h-5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center text-xs text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] transition-colors"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded-md border theme-border bg-[var(--theme-surface)] text-[var(--theme-text-muted)] shadow-2xs pointer-events-none">
+                Ctrl K
+              </kbd>
+            )}
+          </div>
         </div>
+      </div>
 
+      {/* Right: Actions Cluster */}
+      <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
         {/* Test Mode Toggle Pill */}
         <button
           onClick={() => toggleTestMode()}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all border cursor-pointer ${
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
             testMode
               ? 'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400 shadow-sm'
               : 'border-dashed theme-border text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:theme-surface-alt'
@@ -154,7 +182,7 @@ export function Navbar({ onMenuClick, isSidebarVisible, onToggleSidebar }) {
           }
         >
           <FlaskConical className={`w-3.5 h-3.5 ${testMode ? 'text-amber-500 animate-pulse' : 'text-slate-400'}`} />
-          <span className="hidden sm:inline">
+          <span className="hidden xl:inline">
             {testMode ? 'Test Mode: ON' : 'Test Mode'}
           </span>
           <span
@@ -171,7 +199,7 @@ export function Navbar({ onMenuClick, isSidebarVisible, onToggleSidebar }) {
         <button
           onClick={handleRefresh}
           disabled={loading || isRefreshing}
-          className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
           title="Refresh data"
         >
           <RotateCw className={`w-4 h-4 ${isRefreshing || loading ? 'animate-spin theme-accent-text' : ''}`} />
@@ -180,47 +208,32 @@ export function Navbar({ onMenuClick, isSidebarVisible, onToggleSidebar }) {
         {/* Quick New Issue Action */}
         <button
           onClick={openCreateModal}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold theme-btn-primary shadow-sm active:scale-95 transition-all flex-shrink-0 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold theme-btn-primary shadow-sm active:scale-95 transition-all flex-shrink-0 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span className="hidden xs:inline">New Issue</span>
+          <span className="hidden sm:inline">New Issue</span>
         </button>
-
-        {/* Explicit Switch User button */}
-        {isAuthenticated && user && (
-          <button
-            onClick={() => setUserMenuOpen((prev) => !prev)}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border theme-border hover:theme-surface-alt transition-colors text-[var(--theme-text)]"
-            title={otherProfiles.length > 0 ? `Switch profile (${sessions.length} logged in)` : 'Switch or add user profile'}
-          >
-            <Users className="w-3.5 h-3.5 theme-accent-text" />
-            <span className="hidden sm:inline">Switch User</span>
-            {sessions.length > 1 && (
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full theme-btn-primary">
-                {sessions.length}
-              </span>
-            )}
-          </button>
-        )}
 
         {/* Multi-Account Profile Switcher Menu */}
         {isAuthenticated && user ? (
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-2 p-1 pl-1.5 rounded-xl border theme-border hover:theme-surface-alt transition-colors"
-              title={`${user.name} (${user.email})`}
+              className="flex items-center gap-2 p-1 sm:p-1.5 pl-1.5 sm:pl-2 rounded-xl border theme-border hover:theme-surface-alt transition-colors"
+              title={`${user.name} (${user.email}) - Click to switch profile or manage accounts`}
             >
               <img
                 src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`}
                 alt={user.name}
-                className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700"
+                className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-slate-200 dark:bg-slate-700 flex-shrink-0"
               />
               <span className="text-xs font-semibold hidden md:inline max-w-[100px] truncate text-[var(--theme-text)]">
                 {user.name.split(' ')[0]}
               </span>
-              {otherProfiles.length > 0 && (
-                <span className="w-2 h-2 rounded-full theme-btn-primary" title={`${otherProfiles.length} other account(s) saved`} />
+              {sessions && sessions.length > 1 && (
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full theme-btn-primary" title={`${sessions.length} active profiles`}>
+                  {sessions.length}
+                </span>
               )}
             </button>
 
