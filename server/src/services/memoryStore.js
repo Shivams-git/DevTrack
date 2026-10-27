@@ -132,7 +132,7 @@ class MemoryStore {
       ...updates,
       _id: existing._id,
       id: existing.id,
-      key: existing.key,
+      key: updates.key ? updates.key.toUpperCase().trim() : existing.key,
       updatedAt: new Date(),
     };
 

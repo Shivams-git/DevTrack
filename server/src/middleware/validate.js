@@ -10,6 +10,16 @@ export function validateCreateIssue(req, res, next) {
     });
   }
 
+  if (req.body.key !== undefined && req.body.key !== null && req.body.key !== '') {
+    const k = String(req.body.key).trim();
+    if (!/^[A-Za-z0-9_-]{2,20}$/.test(k)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Identifier/Key must be 2-20 alphanumeric characters (e.g. DEV-001, BUG-101)',
+      });
+    }
+  }
+
   if (title.trim().length > 150) {
     return res.status(400).json({
       success: false,
@@ -66,7 +76,17 @@ export function validateCreateIssue(req, res, next) {
 }
 
 export function validateUpdateIssue(req, res, next) {
-  const { title, type, status, priority, dueDate, estimatedHours } = req.body;
+  const { title, type, status, priority, dueDate, estimatedHours, key } = req.body;
+
+  if (key !== undefined && key !== null && key !== '') {
+    const k = String(key).trim();
+    if (!/^[A-Za-z0-9_-]{2,20}$/.test(k)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Identifier/Key must be 2-20 alphanumeric characters (e.g. DEV-001, BUG-101)',
+      });
+    }
+  }
 
   if (title !== undefined) {
     if (typeof title !== 'string' || title.trim().length < 3) {

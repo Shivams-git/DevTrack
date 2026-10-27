@@ -122,64 +122,64 @@ export function DashboardPage() {
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Issues */}
-        <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-subtle flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Total Issues</span>
             <Layers className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="text-2xl font-black text-slate-900 font-mono">{metrics.total}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Across all workflow states</div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{metrics.total}</div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Across all workflow states</div>
         </div>
 
         {/* In Progress */}
-        <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-subtle flex flex-col justify-between">
-          <div className="flex items-center justify-between text-amber-600 mb-2">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
+          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">In Progress</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-black text-amber-600 font-mono">{metrics.inProgress}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Actively being worked on</div>
+          <div className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">{metrics.inProgress}</div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Actively being worked on</div>
         </div>
 
         {/* Completed */}
-        <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-subtle flex flex-col justify-between">
-          <div className="flex items-center justify-between text-emerald-600 mb-2">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
+          <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Completed</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-black text-emerald-600 font-mono">{metrics.completed}</div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{metrics.completed}</div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
             {metrics.completionPercentage}% completion rate
           </div>
         </div>
 
         {/* Overdue */}
-        <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-subtle flex flex-col justify-between">
-          <div className="flex items-center justify-between text-rose-600 mb-2">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
+          <div className="flex items-center justify-between text-rose-600 dark:text-rose-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Overdue</span>
             <AlertTriangle className="w-4 h-4 text-rose-500" />
           </div>
-          <div className="text-2xl font-black text-rose-600 font-mono">{metrics.overdue}</div>
-          <div className="text-[11px] text-slate-400 mt-1">Requires immediate attention</div>
+          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 font-mono">{metrics.overdue}</div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Requires immediate attention</div>
         </div>
 
         {/* Blocked */}
-        <div className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-subtle flex flex-col justify-between col-span-2 lg:col-span-1">
-          <div className="flex items-center justify-between text-indigo-600 mb-2">
+        <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between col-span-2 lg:col-span-1">
+          <div className="flex items-center justify-between text-indigo-600 dark:text-indigo-400 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">Blocked</span>
             <ShieldAlert className="w-4 h-4 text-indigo-500" />
           </div>
-          <div className="text-2xl font-black text-indigo-600 font-mono">{metrics.blocked}</div>
-          <div className="text-[11px] text-slate-400 mt-1">External blockers flagged</div>
+          <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono">{metrics.blocked}</div>
+          <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">External blockers flagged</div>
         </div>
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Status Distribution Pie Chart */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-subtle">
-          <h3 className="text-sm font-bold text-slate-900 mb-1">Issue Distribution by Status</h3>
-          <p className="text-xs text-slate-500 mb-4">Current distribution across Kanban pipeline</p>
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Issue Distribution by Status</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Current distribution across Kanban pipeline</p>
 
           {statusChartData.length > 0 ? (
             <div className="h-60 w-full flex items-center justify-center">
@@ -233,19 +233,19 @@ export function DashboardPage() {
         </div>
 
         {/* Priority Distribution Bar Chart */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-subtle">
-          <h3 className="text-sm font-bold text-slate-900 mb-1">Issues by Priority</h3>
-          <p className="text-xs text-slate-500 mb-4">Workload breakdown by severity level</p>
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Issues by Priority</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Workload breakdown by severity level</p>
 
           {priorityChartData.length > 0 ? (
             <div className="h-60 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={priorityChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.3} />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip
-                    cursor={{ fill: '#f8fafc' }}
+                    cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                     contentStyle={{
                       backgroundColor: '#0f172a',
                       border: 'none',
@@ -273,11 +273,11 @@ export function DashboardPage() {
       {/* Two Column Section: Urgent/Overdue Tasks & Upcoming Deadlines */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Urgent or Overdue Work */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-subtle">
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Flame className="w-4 h-4 text-rose-600" />
-              <h3 className="text-sm font-bold text-slate-900">Highest Urgency Tasks</h3>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Highest Urgency Tasks</h3>
             </div>
             <span className="text-[11px] text-slate-400 font-mono">Ranked by score</span>
           </div>
@@ -288,33 +288,33 @@ export function DashboardPage() {
                 <div
                   key={task.key}
                   onClick={() => openDetailModal(task)}
-                  className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer group"
+                  className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-indigo-50/30 dark:hover:bg-slate-800/40 transition-all cursor-pointer group"
                 >
                   <div className="flex-1 min-w-0 pr-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-xs font-bold text-indigo-600">
+                      <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
                         {task.key}
                       </span>
                       <PriorityBadge priority={task.priority} size="xs" />
                       {task.isBlocked && (
-                        <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded">
+                        <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 px-1.5 py-0.2 rounded">
                           BLOCKED
                         </span>
                       )}
                       {task.isOverdue && (
-                        <span className="text-[10px] font-bold text-rose-700 bg-rose-100 px-1.5 py-0.2 rounded">
+                        <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-950/60 px-1.5 py-0.2 rounded">
                           OVERDUE
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-semibold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                       {task.title}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <UrgencyBadge level={task.urgencyLevel} score={task.urgencyScore} />
-                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors" />
                   </div>
                 </div>
               ))
@@ -327,12 +327,12 @@ export function DashboardPage() {
         </div>
 
         {/* Upcoming Deadlines & Recently Updated */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-subtle flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-subtle flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-amber-500" />
-                <h3 className="text-sm font-bold text-slate-900">Upcoming Deadlines</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Upcoming Deadlines</h3>
               </div>
               <span className="text-[11px] text-slate-400">Next 7 days</span>
             </div>
@@ -343,22 +343,22 @@ export function DashboardPage() {
                   <div
                     key={task.key}
                     onClick={() => openDetailModal(task)}
-                    className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-slate-300 transition-all cursor-pointer group"
+                    className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer group"
                   >
                     <div className="flex-1 min-w-0 pr-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-mono text-xs font-bold text-indigo-600">
+                        <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
                           {task.key}
                         </span>
                         <StatusBadge status={task.status} size="xs" />
                       </div>
-                      <p className="text-xs font-semibold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">
+                      <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {task.title}
                       </p>
                     </div>
 
                     <div className="text-right flex-shrink-0">
-                      <div className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                      <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900/60">
                         {formatDate(task.dueDate)}
                       </div>
                       <div className="text-[10px] text-slate-400 mt-0.5">
@@ -376,13 +376,13 @@ export function DashboardPage() {
           </div>
 
           {/* Quick link to board */}
-          <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-500">View cards in column view</span>
+          <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400">View cards in column view</span>
             <a
               href="/board"
-              className="font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+              className="font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1"
             >
-              Open Kanban Board <ArrowUpRight className="w-3.5 h-3.5" />
+              Open Kanban Board <ChevronRight className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>

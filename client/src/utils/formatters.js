@@ -136,3 +136,41 @@ export const URGENCY_STYLES = {
     bg: 'bg-slate-100 text-slate-700 border-slate-300',
   },
 };
+
+/**
+ * Flexible search helper matching keys (e.g. "dev - 001", "dev 001", "dev-001"), titles, tags, and status
+ */
+export function matchesSearch(issue, rawQuery) {
+  if (!rawQuery || !rawQuery.trim()) return true;
+  if (!issue) return false;
+
+  const q = rawQuery.toLowerCase().trim();
+  const normalizedQ = q.replace(/[\s-_]+/g, '');
+  const itemKey = (issue.key || '').toLowerCase();
+  const normalizedKey = itemKey.replace(/[\s-_]+/g, '');
+
+  if (itemKey.includes(q) || (normalizedQ && normalizedKey.includes(normalizedQ))) {
+    return true;
+  }
+  if (issue.title && issue.title.toLowerCase().includes(q)) {
+    return true;
+  }
+  if (issue.description && issue.description.toLowerCase().includes(q)) {
+    return true;
+  }
+  if (Array.isArray(issue.labels) && issue.labels.some((l) => l.toLowerCase().includes(q))) {
+    return true;
+  }
+  if (issue.type && issue.type.toLowerCase().includes(q)) {
+    return true;
+  }
+  if (issue.priority && issue.priority.toLowerCase().includes(q)) {
+    return true;
+  }
+  if (issue.status && issue.status.toLowerCase().includes(q)) {
+    return true;
+  }
+
+  return false;
+}
+

@@ -3,6 +3,8 @@ import { useIssues } from '../context/IssueContext.jsx';
 import { KanbanColumn } from '../components/board/KanbanColumn.jsx';
 import { Filter, X, Plus, Search } from 'lucide-react';
 
+import { matchesSearch } from '../utils/formatters.js';
+
 const COLUMNS = ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done'];
 const PRIORITIES = ['All', 'Low', 'Medium', 'High', 'Critical'];
 const TYPES = ['All', 'Task', 'Bug', 'Feature', 'Improvement'];
@@ -23,15 +25,9 @@ export function BoardPage() {
 
   // Filter issues
   const filteredIssues = issues.filter((issue) => {
-    // Search query
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const match =
-        issue.key?.toLowerCase().includes(q) ||
-        issue.title?.toLowerCase().includes(q) ||
-        issue.description?.toLowerCase().includes(q) ||
-        (issue.labels && issue.labels.some((l) => l.toLowerCase().includes(q)));
-      if (!match) return false;
+    // Search query with flexible matching
+    if (searchQuery && !matchesSearch(issue, searchQuery)) {
+      return false;
     }
 
     // Priority filter
@@ -59,9 +55,9 @@ export function BoardPage() {
   return (
     <div className="space-y-4 flex flex-col h-[calc(100vh-8.5rem)]">
       {/* Filters & Actions Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200/90 shadow-subtle flex-shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-subtle flex-shrink-0 transition-colors">
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-500 font-medium mr-1">
+          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium mr-1">
             <Filter className="w-3.5 h-3.5" />
             <span>Filter Board:</span>
           </div>
@@ -70,7 +66,7 @@ export function BoardPage() {
           <select
             value={selectedPriority}
             onChange={(e) => setSelectedPriority(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium focus:outline-none focus:border-indigo-500 cursor-pointer"
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:border-indigo-500 cursor-pointer"
           >
             {PRIORITIES.map((p) => (
               <option key={p} value={p}>
@@ -83,7 +79,7 @@ export function BoardPage() {
           <select
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium focus:outline-none focus:border-indigo-500 cursor-pointer"
+            className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:border-indigo-500 cursor-pointer"
           >
             {TYPES.map((t) => (
               <option key={t} value={t}>
@@ -96,7 +92,7 @@ export function BoardPage() {
           {hasActiveFilters && (
             <button
               onClick={resetFilters}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 font-semibold transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 font-semibold transition-colors"
             >
               <X className="w-3.5 h-3.5" />
               Reset Filters
@@ -105,8 +101,8 @@ export function BoardPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 font-medium">
-            Showing <strong className="text-slate-800">{filteredIssues.length}</strong> of{' '}
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            Showing <strong className="text-slate-800 dark:text-slate-200">{filteredIssues.length}</strong> of{' '}
             {issues.length} issues
           </span>
           <button

@@ -60,8 +60,12 @@ export async function getAllIssues(params = {}) {
   const query = {};
 
   if (search) {
-    const regex = new RegExp(search, 'i');
-    query.$or = [{ title: regex }, { description: regex }, { key: regex }];
+    const trimmed = String(search).trim();
+    // Allow matching "dev - 001" or "dev 001" to "DEV-001"
+    const flexibleKey = trimmed.replace(/[\s-_]+/g, '[-_ ]?');
+    const regex = new RegExp(trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    const keyRegex = new RegExp(flexibleKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    query.$or = [{ title: regex }, { description: regex }, { key: keyRegex }, { labels: regex }];
   }
 
   if (status && status !== 'All') {
@@ -121,7 +125,20 @@ export async function getIssueById(idOrKey) {
 }
 
 export async function createIssue(data) {
-  const key = data.key || (await generateNextKey());
+  let key = data.key ? String(data.key).trim().toUpperCase() : '';
+  if (!key) {
+    key = await generateNextKey();
+  } else {
+    const exists = isDbConnected()
+      ? await Issue.exists({ key })
+      : memoryStore.issues.some((i) => i.key === key);
+    if (exists) {
+      const err = new Error(`Issue identifier "${key}" is already in use. Please choose a different identifier or leave it empty to auto-generate.`);
+      err.statusCode = 409;
+      throw err;
+    }
+  }
+
   const payload = {
     ...data,
     key,
@@ -150,6 +167,20 @@ export async function createIssue(data) {
 export async function updateIssue(idOrKey, updates) {
   const existing = await getIssueById(idOrKey);
   if (!existing) return null;
+
+  if (updates.key) {
+    updates.key = String(updates.key).trim().toUpperCase();
+    if (updates.key !== existing.key) {
+      const exists = isDbConnected()
+        ? await Issue.exists({ key: updates.key })
+        : memoryStore.issues.some((i) => i.key === updates.key);
+      if (exists) {
+        const err = new Error(`Issue identifier "${updates.key}" is already in use. Please choose a different identifier.`);
+        err.statusCode = 409;
+        throw err;
+      }
+    }
+  }
 
   let updatedIssue;
   if (isDbConnected()) {
