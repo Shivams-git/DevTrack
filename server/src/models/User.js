@@ -44,6 +44,11 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    theme: {
+      type: String,
+      default: 'tokyo',
+      trim: true,
+    },
   },
   {
     timestamps: true,

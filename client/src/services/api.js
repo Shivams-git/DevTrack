@@ -73,4 +73,10 @@ export const api = {
   getInsights: () => request('/api/insights'),
 
   getActivity: (limit = 40) => request(`/api/activity?limit=${limit}`),
+
+  updateTheme: (theme) =>
+    request('/api/auth/theme', {
+      method: 'PATCH',
+      body: JSON.stringify({ theme }),
+    }),
 };

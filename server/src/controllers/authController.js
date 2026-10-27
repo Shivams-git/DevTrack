@@ -52,3 +52,17 @@ export async function getUsers(req, res, next) {
     next(err);
   }
 }
+
+export async function updateTheme(req, res, next) {
+  try {
+    const { theme } = req.body;
+    const user = await authService.updateTheme(req.user.id, theme);
+    res.status(200).json({
+      success: true,
+      message: 'Theme preference saved',
+      data: user,
+    });
+  } catch (err) {
+    next(err);
+  }
+}

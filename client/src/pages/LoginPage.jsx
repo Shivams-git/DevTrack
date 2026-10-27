@@ -41,6 +41,7 @@ export function LoginPage() {
     register,
     demoLogin,
     isAuthenticated,
+    enterGuestMode,
   } = useAuth();
   const { activeTheme } = useTheme();
   const navigate = useNavigate();
@@ -125,12 +126,12 @@ export function LoginPage() {
   };
 
   const handleEnterTestMode = () => {
-    localStorage.setItem('devtrack_test_mode', 'true');
+    enterGuestMode(true);
     navigate('/');
   };
 
   const handleEnterGuest = () => {
-    localStorage.setItem('devtrack_test_mode', 'false');
+    enterGuestMode(false);
     navigate('/');
   };
 
@@ -138,7 +139,7 @@ export function LoginPage() {
     <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text)] flex flex-col justify-between transition-colors duration-200">
       {/* Top Navbar */}
       <header className="h-16 px-6 flex items-center justify-between border-b theme-border theme-header backdrop-blur-md">
-        <Link to="/" className="flex items-center gap-2.5">
+        <Link to={isAuthenticated ? '/' : '/login'} className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl theme-btn-primary flex items-center justify-center text-white shadow-md">
             <Layers className="w-4 h-4" />
           </div>

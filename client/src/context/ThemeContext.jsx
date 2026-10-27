@@ -185,6 +185,8 @@ export const THEMES = [
   },
 ];
 
+import { api } from '../services/api.js';
+
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
@@ -196,6 +198,18 @@ export function ThemeProvider({ children }) {
     THEMES.find((t) => t.id === currentThemeId) ||
     THEMES.find((t) => t.id === 'tokyo') ||
     THEMES[0];
+
+  // Listen for login/profile theme sync events
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      if (e.detail && THEMES.some((t) => t.id === e.detail)) {
+        setCurrentThemeId(e.detail);
+        localStorage.setItem('devtrack_theme', e.detail);
+      }
+    };
+    window.addEventListener('devtrack_theme_change', handleThemeChange);
+    return () => window.removeEventListener('devtrack_theme_change', handleThemeChange);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('devtrack_theme', activeTheme.id);
@@ -227,9 +241,34 @@ export function ThemeProvider({ children }) {
     }
   }, [activeTheme]);
 
-  const setTheme = (themeId) => {
-    if (THEMES.some((t) => t.id === themeId)) {
-      setCurrentThemeId(themeId);
+  const setTheme = async (themeId) => {
+    if (!THEMES.some((t) => t.id === themeId)) return;
+    setCurrentThemeId(themeId);
+    localStorage.setItem('devtrack_theme', themeId);
+
+    // If authenticated, persist to MongoDB Atlas / backend database
+    const token = localStorage.getItem('devtrack_token');
+    if (token) {
+      try {
+        await api.updateTheme(themeId);
+        // Sync locally cached user object
+        const rawUser = localStorage.getItem('devtrack_user');
+        if (rawUser) {
+          const userObj = JSON.parse(rawUser);
+          userObj.theme = themeId;
+          localStorage.setItem('devtrack_user', JSON.stringify(userObj));
+        }
+        const rawSessions = localStorage.getItem('devtrack_sessions');
+        if (rawSessions) {
+          const sessionsObj = JSON.parse(rawSessions);
+          const updatedSessions = sessionsObj.map((s) =>
+            s.token === token ? { ...s, user: { ...s.user, theme: themeId } } : s
+          );
+          localStorage.setItem('devtrack_sessions', JSON.stringify(updatedSessions));
+        }
+      } catch (err) {
+        console.warn('Could not persist theme to server:', err.message);
+      }
     }
   };
 

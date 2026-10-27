@@ -25,6 +25,7 @@ class MemoryStore {
         team: 'Platform Architecture',
         bio: 'Tech Lead focusing on developer productivity and cloud infrastructure.',
         avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=alex@devtrack.dev',
+        theme: 'tokyo',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -37,6 +38,7 @@ class MemoryStore {
         team: 'Frontend Systems',
         bio: 'Senior full-stack engineer building intuitive UI/UX systems.',
         avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=sarah@devtrack.dev',
+        theme: 'tokyo',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -56,11 +58,19 @@ class MemoryStore {
   createUser(userData) {
     const user = {
       _id: 'user_' + Math.random().toString(36).substring(2, 9),
+      theme: 'tokyo',
       ...userData,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     this.users.push(user);
+    return user;
+  }
+
+  updateUser(id, updates) {
+    const user = this.findUserById(id);
+    if (!user) return null;
+    Object.assign(user, updates, { updatedAt: new Date() });
     return user;
   }
 

@@ -174,4 +174,35 @@ export const authService = {
       return memoryStore.users.map(({ password: _, ...u }) => u);
     }
   },
+
+  async updateTheme(userId, theme) {
+    if (!theme) {
+      const err = new Error('Theme is required');
+      err.status = 400;
+      throw err;
+    }
+
+    if (isMongoConnected()) {
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { $set: { theme: String(theme).trim() } },
+        { new: true }
+      );
+      if (!user) {
+        const err = new Error('User not found');
+        err.status = 404;
+        throw err;
+      }
+      return user.toJSON();
+    } else {
+      const user = memoryStore.updateUser(userId, { theme: String(theme).trim() });
+      if (!user) {
+        const err = new Error('User not found');
+        err.status = 404;
+        throw err;
+      }
+      const { password: _, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    }
+  },
 };

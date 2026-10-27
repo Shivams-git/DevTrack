@@ -30,6 +30,7 @@ export async function runSeed({ quiet = false } = {}) {
           team: 'Platform Architecture',
           bio: 'Tech Lead focusing on developer productivity, CI/CD, and distributed systems.',
           avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=alex@devtrack.dev',
+          theme: 'tokyo',
         },
         {
           name: 'Sarah Chen',
@@ -39,6 +40,7 @@ export async function runSeed({ quiet = false } = {}) {
           team: 'Frontend Systems',
           bio: 'Senior full-stack engineer building high performance user interfaces.',
           avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=sarah@devtrack.dev',
+          theme: 'tokyo',
         },
         {
           name: 'David Kim',
@@ -48,6 +50,7 @@ export async function runSeed({ quiet = false } = {}) {
           team: 'Quality Engineering',
           bio: 'Lead automation & test engineer optimizing release reliability.',
           avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=david@devtrack.dev',
+          theme: 'tokyo',
         },
       ]);
       if (!quiet) logger.info('Seeded demo accounts in MongoDB Atlas (alex@devtrack.dev, sarah@devtrack.dev)!');

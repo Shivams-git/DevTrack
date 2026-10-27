@@ -50,6 +50,29 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('devtrack_token') || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isGuest, setIsGuest] = useState(() => {
+    try {
+      return sessionStorage.getItem('devtrack_guest_session') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const applyUserTheme = (userData) => {
+    const themeToApply = (userData && userData.theme) || 'tokyo';
+    localStorage.setItem('devtrack_theme', themeToApply);
+    window.dispatchEvent(new CustomEvent('devtrack_theme_change', { detail: themeToApply }));
+  };
+
+  const enterGuestMode = (isTest = false) => {
+    try {
+      sessionStorage.setItem('devtrack_guest_session', 'true');
+    } catch {}
+    setIsGuest(true);
+    if (typeof isTest === 'boolean') {
+      localStorage.setItem('devtrack_test_mode', isTest ? 'true' : 'false');
+    }
+  };
 
   // Synchronize helper
   const syncSessionStorage = (newSessions, activeUser, activeToken) => {
@@ -60,6 +83,11 @@ export function AuthProvider({ children }) {
       setToken(activeToken);
       localStorage.setItem('devtrack_user', JSON.stringify(activeUser));
       localStorage.setItem('devtrack_token', activeToken);
+      setIsGuest(false);
+      try {
+        sessionStorage.removeItem('devtrack_guest_session');
+      } catch {}
+      applyUserTheme(activeUser);
     } else {
       setUser(null);
       setToken(null);
@@ -89,6 +117,7 @@ export function AuthProvider({ children }) {
           const updatedUser = json.data;
           setUser(updatedUser);
           localStorage.setItem('devtrack_user', JSON.stringify(updatedUser));
+          applyUserTheme(updatedUser);
 
           // Update active user in sessions list
           setSessions((prev) => {
@@ -198,6 +227,11 @@ export function AuthProvider({ children }) {
       setToken(targetSession.token);
       localStorage.setItem('devtrack_user', JSON.stringify(targetSession.user));
       localStorage.setItem('devtrack_token', targetSession.token);
+      setIsGuest(false);
+      try {
+        sessionStorage.removeItem('devtrack_guest_session');
+      } catch {}
+      applyUserTheme(targetSession.user);
       return { success: true, user: targetSession.user };
     }
     return { success: false, error: 'Session not found' };
@@ -206,6 +240,11 @@ export function AuthProvider({ children }) {
   const logout = (userIdOrEmail) => {
     const targetId = userIdOrEmail || (user ? (user._id || user.email) : null);
     if (!targetId) return;
+
+    try {
+      sessionStorage.removeItem('devtrack_guest_session');
+    } catch {}
+    setIsGuest(false);
 
     const remaining = sessions.filter((s) => !isSameUser(s.user, targetId));
 
@@ -226,6 +265,10 @@ export function AuthProvider({ children }) {
   };
 
   const logoutAll = () => {
+    try {
+      sessionStorage.removeItem('devtrack_guest_session');
+    } catch {}
+    setIsGuest(false);
     syncSessionStorage([], null, null);
   };
 
@@ -241,6 +284,8 @@ export function AuthProvider({ children }) {
         sessions,
         otherProfiles: sessions.filter((s) => user && !isSameUser(s.user, user)),
         isAuthenticated: Boolean(user && token),
+        isGuest,
+        enterGuestMode,
         loading,
         error,
         login,
