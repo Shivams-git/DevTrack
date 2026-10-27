@@ -10,7 +10,7 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: MONGODB_URI
+      - key: mongosh "mongodb+srv://cluster0.x1tp8iy.mongodb.net/" --apiVersion 1 --username shivam2025pro_db_user --password esSq4iU28SYgxrWC
         sync: false
       - key: CLIENT_URL
         sync: false
